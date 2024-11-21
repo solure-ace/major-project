@@ -5,12 +5,134 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
+class Player {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.height = 80;
+    this.width = 30;
+    this.canMove = true;
+    this.speed = 10;
+  }
+
+  display() {
+    noStroke();
+    fill(150, 200, 230);
+    rect(this.x, this.y, this.width, this.height);
+  }
+
+  move() {
+
+    //           MAIN FOUR DIRECTIONS
+    //forwards / north
+    if (this.north && !this.south && !this.east && !this.west) {
+      this.y -= this.speed;
+    }
+
+    // backwards / south
+    else if (this.south && !this.north && !this.east && !this.west) {
+      this.y += this.speed;
+    }
+
+    // right / east
+    else if (this.east && !this.north && !this.south && !this.west) {
+      this.x += this.speed;
+    }
+
+    // left / west
+    else if (this.west && !this.north && !this.south && !this.east) {
+      this.x -= this.speed;
+    }
+
+    //           DIAGNOLS
+    // forwards/right / northeast
+    if (this.north && !this.south && this.east && !this.west) {
+      this.y -= this.speed;
+      this.x += this.speed;
+    }
+
+    // forwards/left / northwest
+    if (this.north && !this.south && !this.east && this.west) {
+      this.y -= this.speed;
+      this.x -= this.speed;
+    }
+
+    // backwards/right / southeast
+    if (!this.north && this.south && this.east && !this.west) {
+      this.y += this.speed;
+      this.x += this.speed;
+    }
+
+    //backwards/ left / southwest
+    if (!this.north && this.south && !this.east && this.west) {
+      this.y += this.speed;
+      this.x -= this.speed;
+    }
+  }
+}
+
+let gameState = "start";
+let you;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  you = new Player(width/2, height/2);
+
 }
 
 function draw() {
   background(220);
-  circle(mouseX, mouseY, 100);
+
+  if (gameState === "start") {
+    text("start screen", width/2, height/2);
+  }
+  else if (gameState === "ongoing") {
+    you.move();
+    you.display();
+  }
+}
+
+function mousePressed() {
+  if (gameState === "start") {
+    gameState = "ongoing";
+  }
+}
+
+function keyPressed() {
+
+  // player movement
+  if (you.canMove) {
+    if (key === "w") {
+      you.north = true;
+    }
+    if (key === "s") {
+      you.south = true;
+    }
+    if (key === "d") {
+      you.east = true;
+    }
+    if (key === "a") {
+      you.west = true;
+    }
+  }
+
+}
+
+function keyReleased() {
+
+  //player Movement
+  if (you.canMove) {
+    if (key === "w") {
+      you.north = false;
+    }
+    if (key === "s") {
+      you.south = false;
+    }
+    if (key === "d") {
+      you.east = false;
+    }
+    if (key === "a") {
+      you.west = false;
+    }
+  }
 }

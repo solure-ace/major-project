@@ -1,15 +1,25 @@
 # Project Description
 
-Explain what you're hoing to build here.
+A game where you go though a level, with multiple goalpoints (eg. you have to  
+get to x many locations before level completion)
 
 ## Needs to Have List
 
-- thing 1
-- thing 2
+- Enemies
+- melee & projectile type attacks
+- Generated levels
+- Non-Level area
+- 8 directional movement
+- Camera follows players
+- Instructions
 
 ## Nice to Have List
 
-- other thing
-- another thing
-- thing
+- Tutorial level
+- Multiple types of levels
+- obstacles that aren't enemies
+- 8 directional sprites
+- Dialouge system
+
+
 
