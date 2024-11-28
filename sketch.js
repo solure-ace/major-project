@@ -7,6 +7,7 @@
 
 let gameState = "start";
 let you;
+let instructionButton;
 
 //make grid into a class because i will need to make lots of them of different sizes.
 // v grid for class
@@ -34,9 +35,10 @@ function setup() {
 
   you = new Player(width/2, height/2);
 
+  instructionButton = new Button(width/2, height-75, 100, 25, 255, 100, 255);
   // grid =  generateEmptyGrid(cols, rows);
 
-  gridOne = new SingleGrid(5, 5);
+  gridOne = new SingleGrid(8, 7);
   gridOne.generateGrid();
 }
 
@@ -69,6 +71,7 @@ class Player {
     // if (someBall.y > height - someBall.radius || someBall.y < 0 + someBall.radius) {
     //   someBall.dy *= -1;
     // }
+
 
     //           MAIN FOUR DIRECTIONS
     //forwards / north
@@ -117,12 +120,41 @@ class Player {
     }
   }
 
-  // stayWithinGrid(cols, rows) {
+  //   checkWithinGrid(someCols, someRows) {
 
-  //   //left wall
-  //   if (this.x < width - cols * CELL_SIZE / 2) {
-  //   }
-  // }
+//     //               left wall                                              right wall                                    //top wall                                                             // bottom wall       o-o
+//     if (this.x > width/2 - someCols * CELL_SIZE / 2   &&   this.x + this.width < width/2 + someCols * CELL_SIZE / 2   &&   this.y > height/2 - someRows * CELL_SIZE / 2   &&   this.y + this.height < height/2 + someRows * CELL_SIZE / 2) {
+//       return true;
+//     }
+//     return false;
+//   }
+}
+
+class Button {
+  constructor(x, y, w, h, r, g, b) {
+    this.w = w;
+    this.h = h;
+
+    this.x = x - this.w / 2;
+    this.y = y - this.h / 2;
+    //make into a color object later
+    this.r = r;
+    this.g = g;
+    this.b = b;
+  }
+
+  display(){
+    fill(this.r, this.g, this.b);
+    rect(this.x, this.y, this.w, this.h, 50);
+  }
+
+  isHover() {
+
+  }
+
+  isClicked() {
+    //called when mouseClicked can be dependent on gameState, checks if mouseX & mouseY are on the button
+  }
 }
 
 
@@ -163,6 +195,7 @@ function draw() {
   if (gameState === "start") {
     fill(255);
     text("start screen", width/2, height/2);
+    instructionButton.display();
   }
   else if (gameState === "ongoing") {
 
@@ -188,8 +221,13 @@ function mousePressed() {
   }
 }
 
+function displayInstructions() {
+}
+
 function keyPressed() {
 
+
+  // fix everything :thumbs-up:
   // player movement
   if (you.canMove) {
     if (key === "w") {
