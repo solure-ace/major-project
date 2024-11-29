@@ -27,6 +27,10 @@ let gridHeight = rows*CELL_SIZE;
 
 let currentGrid = 1;
 
+
+//make a function that defines the walkable area based on the grid (use walkable and unwalkable tiles) that detects corners
+//and puts a point there, then use the polygon that makes to control where the character walks?????? using collide 2d would porbably be for the best
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // cant use you.width and you.height because they dont exist yet...???
@@ -75,49 +79,29 @@ class Player {
 
     //           MAIN FOUR DIRECTIONS
     //forwards / north
-    if (this.north && !this.south && !this.east && !this.west) {
+    // if (this.north && !this.south && !this.east && !this.west) {
+    //   this.y -= this.speed;
+    // }
+
+    if (keyIsDown(87) && !keyIsDown(83)) {
       this.y -= this.speed;
     }
 
     // backwards / south
-    else if (this.south && !this.north && !this.east && !this.west) {
+    if (keyIsDown(83) && !keyIsDown(87)) {
       this.y += this.speed;
     }
 
     // right / east
-    else if (this.east && !this.north && !this.south && !this.west) {
+    if (keyIsDown(68) && !keyIsDown(65)) {
       this.x += this.speed;
     }
 
     // left / west
-    else if (this.west && !this.north && !this.south && !this.east) {
+    if (keyIsDown(65) && !keyIsDown(68)) {
       this.x -= this.speed;
     }
-
-    //           DIAGONALS
-    // forwards/right / northeast
-    if (this.north && !this.south && this.east && !this.west) {
-      this.y -= this.speed-sqrt(2)/2;
-      this.x += this.speed-sqrt(2)/2;
-    }
-
-    // forwards/left / northwest
-    if (this.north && !this.south && !this.east && this.west) {
-      this.y -= this.speed-sqrt(2)/2;
-      this.x -= this.speed-sqrt(2)/2;
-    }
-
-    // backwards/right / southeast
-    if (!this.north && this.south && this.east && !this.west) {
-      this.y += this.speed-sqrt(2)/2;
-      this.x += this.speed-sqrt(2)/2;
-    }
-
-    //backwards/ left / southwest
-    if (!this.north && this.south && !this.east && this.west) {
-      this.y += this.speed-sqrt(2)/2;
-      this.x -= this.speed-sqrt(2)/2;
-    }
+    //normalize the speeeddd
   }
 
   //   checkWithinGrid(someCols, someRows) {
@@ -137,15 +121,18 @@ class Button {
 
     this.x = x - this.w / 2;
     this.y = y - this.h / 2;
-    //make into a color object later
-    this.r = r;
-    this.g = g;
-    this.b = b;
+    this.c = color(r, g, b);
   }
 
-  display(){
-    fill(this.r, this.g, this.b);
-    rect(this.x, this.y, this.w, this.h, 50);
+  display(theText){
+    //shape
+    noStroke();
+    fill(this.c);
+    rect(this.x, this.y, this.w, this.h, 20);
+
+    //text
+    textAlign(CENTER);
+    text(`${theText}`, this.x - this.w/2, this.y - this.x);
   }
 
   isHover() {
@@ -193,9 +180,7 @@ function draw() {
   background(60);
 
   if (gameState === "start") {
-    fill(255);
-    text("start screen", width/2, height/2);
-    instructionButton.display();
+    displayStartScreen();
   }
   else if (gameState === "ongoing") {
 
@@ -206,6 +191,15 @@ function draw() {
     you.move();
     you.display();
   }
+}
+
+function displayStartScreen() {
+
+  fill(255);
+  textAlign(CENTER);
+  text("start screen", width/2, height/2);
+
+  instructionButton.display();
 }
 
 function displayOneGrid() {
@@ -225,24 +219,6 @@ function displayInstructions() {
 }
 
 function keyPressed() {
-
-
-  // fix everything :thumbs-up:
-  // player movement
-  if (you.canMove) {
-    if (key === "w") {
-      you.north = true;
-    }
-    if (key === "s") {
-      you.south = true;
-    }
-    if (key === "d") {
-      you.east = true;
-    }
-    if (key === "a") {
-      you.west = true;
-    }
-  }
 }
 
 // function movePlayerBetweenGrids() {
@@ -251,21 +227,6 @@ function keyPressed() {
 
 function keyReleased() {
 
-  //player Movement
-  if (you.canMove) {
-    if (key === "w") {
-      you.north = false;
-    }
-    if (key === "s") {
-      you.south = false;
-    }
-    if (key === "d") {
-      you.east = false;
-    }
-    if (key === "a" ) {
-      you.west = false;
-    }
-  }
 }
 
 
