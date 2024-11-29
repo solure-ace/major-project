@@ -74,25 +74,34 @@ class Player {
 
 
     //           MAIN FOUR DIRECTIONS
+
+
+ // if (keyIsDown(87)) W
+ //s83
+ //d68
+ //a65
+
     //forwards / north
-    if (this.north && !this.south && !this.east && !this.west) {
-      this.y -= this.speed;
-    }
+    // if (this.north && !this.south && !this.east && !this.west) {
+    //   this.y -= this.speed;
+    // }
 
-    // backwards / south
-    else if (this.south && !this.north && !this.east && !this.west) {
-      this.y += this.speed;
-    }
+    // if (keyIsDown(87))
 
-    // right / east
-    else if (this.east && !this.north && !this.south && !this.west) {
-      this.x += this.speed;
-    }
+    // // backwards / south
+    // else if (this.south && !this.north && !this.east && !this.west) {
+    //   this.y += this.speed;
+    // }
 
-    // left / west
-    else if (this.west && !this.north && !this.south && !this.east) {
-      this.x -= this.speed;
-    }
+    // // right / east
+    // else if (this.east && !this.north && !this.south && !this.west) {
+    //   this.x += this.speed;
+    // }
+
+    // // left / west
+    // else if (this.west && !this.north && !this.south && !this.east) {
+    //   this.x -= this.speed;
+    // }
 
     //           DIAGONALS
     // forwards/right / northeast
@@ -230,18 +239,18 @@ function keyPressed() {
   // fix everything :thumbs-up:
   // player movement
   if (you.canMove) {
-    if (key === "w") {
-      you.north = true;
-    }
-    if (key === "s") {
-      you.south = true;
-    }
-    if (key === "d") {
-      you.east = true;
-    }
-    if (key === "a") {
-      you.west = true;
-    }
+    // if (key === "w") {
+    //   you.north = true;
+    // }
+    // if (key === "s") {
+    //   you.south = true;
+    // }
+    // if (key === "d") {
+    //   you.east = true;
+    // }
+    // if (key === "a") {
+    //   you.west = true;
+    // }
   }
 }
 
@@ -251,21 +260,21 @@ function keyPressed() {
 
 function keyReleased() {
 
-  //player Movement
-  if (you.canMove) {
-    if (key === "w") {
-      you.north = false;
-    }
-    if (key === "s") {
-      you.south = false;
-    }
-    if (key === "d") {
-      you.east = false;
-    }
-    if (key === "a" ) {
-      you.west = false;
-    }
-  }
+  // //player Movement
+  // if (you.canMove) {
+  //   if (key === "w") {
+  //     you.north = false;
+  //   }
+  //   if (key === "s") {
+  //     you.south = false;
+  //   }
+  //   if (key === "d") {
+  //     you.east = false;
+  //   }
+  //   if (key === "a" ) {
+  //     you.west = false;
+  //   }
+  // }
 }
 
 
