@@ -8,6 +8,7 @@
 let gameState = "start";
 let you;
 let instructionButton;
+let startButton;
 
 //make grid into a class because i will need to make lots of them of different sizes.
 // v grid for class
@@ -16,7 +17,6 @@ let gridOne;
 
 let gridTwo;
 
-//random hard coded grid??? yeah
 let grid;
 let cols = 4;
 let rows = 6;
@@ -39,10 +39,15 @@ function setup() {
 
   you = new Player(width/2, height/2);
 
-  instructionButton = new Button(width/2, height-75, 100, 25, 255, 100, 255);
+  // BUTTONS
+  // all buttons made should have rgb values (each) > 20
+  instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 10);
+  startButton = new Button(width/2, height-150, 150, 50,   120, 120, 120,   "Start" , 30);
+  
+  
   // grid =  generateEmptyGrid(cols, rows);
 
-  gridOne = new SingleGrid(8, 7);
+  gridOne = new SingleGrid(14, 8);
   gridOne.generateGrid();
 }
 
@@ -68,6 +73,61 @@ class Player {
 
   move() {
 
+    // ^
+    if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
+      this.y -= this.speed;
+    }
+    // v
+    else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
+      this.y += this.speed;
+    }
+    // <
+    else if (keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87) && !keyIsDown(83)) {
+      this.x += this.speed;
+    }
+    // >
+    else if (keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87) && !keyIsDown(83)) {
+      this.x -= this.speed;
+    }
+
+
+    // v>
+    if (keyIsDown(83) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87)) {
+      this.y += this.speed/sqrt(2);
+      this.x += this.speed/sqrt(2);
+    }
+    // ^>
+    else if (keyIsDown(87) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(83)) {
+      this.y -= this.speed/sqrt(2);
+      this.x += this.speed/sqrt(2);
+    }
+    //^<
+    else if (keyIsDown(87) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(83)) {
+      this.y -= this.speed/sqrt(2);
+      this.x -= this.speed/sqrt(2);
+    }
+    //v<
+    else if (keyIsDown(83) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87)) {
+      this.y += this.speed/sqrt(2);
+      this.x -= this.speed/sqrt(2);
+    }
+
+
+
+    // // right / east
+    // if (keyIsDown(68) && !keyIsDown(65)) {
+    //   this.x += this.speed;
+    // }
+
+    // // left / west
+    // if (keyIsDown(65) && !keyIsDown(68)) {
+    //   this.x -= this.speed;
+    // }
+  }
+
+  //   checkWithinGrid(someCols, someRows) {
+
+
     // from bouncing ball demo
     // if (someBall.x > width - someBall.radius || someBall.x < 0 + someBall.radius) {
     //   someBall.dx *= -1;
@@ -76,42 +136,6 @@ class Player {
     //   someBall.dy *= -1;
     // }
 
-
-    //           MAIN FOUR DIRECTIONS
-
-
- // if (keyIsDown(87)) W
- //s83
- //d68
- //a65
-
-    //forwards / north
-    // if (this.north && !this.south && !this.east && !this.west) {
-    //   this.y -= this.speed;
-    // }
-
-    if (keyIsDown(87) && !keyIsDown(83)) {
-      this.y -= this.speed;
-    }
-
-    // backwards / south
-    if (keyIsDown(83) && !keyIsDown(87)) {
-      this.y += this.speed;
-    }
-
-    // right / east
-    if (keyIsDown(68) && !keyIsDown(65)) {
-      this.x += this.speed;
-    }
-
-    // left / west
-    if (keyIsDown(65) && !keyIsDown(68)) {
-      this.x -= this.speed;
-    }
-    //normalize the speeeddd
-  }
-
-  //   checkWithinGrid(someCols, someRows) {
 
 //     //               left wall                                              right wall                                    //top wall                                                             // bottom wall       o-o
 //     if (this.x > width/2 - someCols * CELL_SIZE / 2   &&   this.x + this.width < width/2 + someCols * CELL_SIZE / 2   &&   this.y > height/2 - someRows * CELL_SIZE / 2   &&   this.y + this.height < height/2 + someRows * CELL_SIZE / 2) {
@@ -122,32 +146,42 @@ class Player {
 }
 
 class Button {
-  constructor(x, y, w, h, r, g, b) {
+  constructor(x, y, w, h, r, g, b, theText, tSize) {
     this.w = w;
     this.h = h;
 
     this.x = x - this.w / 2;
     this.y = y - this.h / 2;
     this.c = color(r, g, b);
+    this.text = theText;
+    this.tSize = tSize
   }
 
-  display(theText){
+  display(){
     //shape
     noStroke();
     fill(this.c);
-    rect(this.x, this.y, this.w, this.h, 20);
+
+    if (this.isHoveredOn()){
+      fill(red(this.c) - 20, green(this.c) - 20, blue(this.c) - 20);
+    }
+
+    rect(this.x, this.y, this.w, this.h, this.h/1.2);
 
     //text
-    textAlign(CENTER);
-    text(`${theText}`, this.x - this.w/2, this.y - this.x);
+    textAlign(CENTER, CENTER);
+    fill(255);
+    textSize(this.tSize);
+    text(`${this.text}`, this.x + this.w/2, this.y + this.h/2);
+    
   }
 
-  isHover() {
-
-  }
+  isHoveredOn() {
+    return(mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h );
+}
 
   isClicked() {
-    //called when mouseClicked can be dependent on gameState, checks if mouseX & mouseY are on the button
+    return(mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h );
   }
 }
 
@@ -166,7 +200,14 @@ class SingleGrid {
     for (let y = 0; y < this.rows; y++) {
       this.grid.push([]);
       for (let x = 0; x < this.cols; x++) {
-        this.grid[y].push(0);
+
+        //top border
+        if (y === 0 || y === this.rows-1 || x === 0 || x === this.cols-1) {
+          this.grid[y].push(1);
+        }
+        else {
+          this.grid[y].push(0);
+        }
       }
     }
   }
@@ -174,8 +215,17 @@ class SingleGrid {
   displayGrid() {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
-        fill(200);
-        stroke(180);
+        
+        if (this.grid[y][x] === 0) {
+          fill(200);
+          stroke(180);
+        }
+        if (this.grid[y][x] === 1) {
+          fill(0);
+          // noStroke();
+          stroke(30);
+        }
+
         rect(x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
       }
     }
@@ -204,8 +254,9 @@ function displayStartScreen() {
 
   fill(255);
   textAlign(CENTER);
-  text("start screen", width/2, height/2);
+  // text("start screen", width/2, height/2);
 
+  startButton.display();
   instructionButton.display();
 }
 
@@ -217,12 +268,9 @@ function displayOneGrid() {
 
 
 function mousePressed() {
-  if (gameState === "start") {
+  if (gameState === "start" && startButton.isClicked()) {
     gameState = "ongoing";
   }
-}
-
-function displayInstructions() {
 }
 
 function keyPressed() {
