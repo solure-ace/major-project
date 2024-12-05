@@ -1,21 +1,36 @@
-// Project Title
-// Your Name
-// Date
+// Major Project
+// Avery Walker
+// December 5th
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
+
+
+//TO DO LIST//
+
+// make 'Map' into a class
+// make a temporary way to go between grids
+// use Collide2d to give each grid in a map a polygon that the player must stay within
 
 let gameState = "start";
 let you;
 let instructionButton;
 let startButton;
 
-//make grid into a class because i will need to make lots of them of different sizes.
-// v grid for class
-// i will give hard coded grids actual names (later), random grids wont need names because they will be kept in an array.
 let gridOne; 
 
 let gridTwo;
+
+
+//array of grids
+let map;
+
+//hard coded Map
+let homeMapTemplate = [[0, 1, 0],
+                       [1, 3, 1],
+                       [0, 1, 0]];
+
+//homeMap = generateMap(homeMapTemplate);
 
 let grid;
 let cols = 4;
@@ -24,28 +39,29 @@ const CELL_SIZE = 100;
 let gridWidth = cols*CELL_SIZE;
 let gridHeight = rows*CELL_SIZE;
 
-
 let currentGrid = 1;
-
-
-//make a function that defines the walkable area based on the grid (use walkable and unwalkable tiles) that detects corners
-//and puts a point there, then use the polygon that makes to control where the character walks?????? using collide 2d would porbably be for the best
+let someGrid;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // cant use you.width and you.height because they dont exist yet...???
-  //WAIT
-  // you = new Player(gridWidth/2-15, gridHeight/2-40);
-
   you = new Player(width/2, height/2);
 
   // BUTTONS
   // all buttons made should have rgb values (each) > 20
+
   instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 10);
-  startButton = new Button(width/2, height-150, 150, 50,   120, 120, 120,   "Start" , 30);
+
+  startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" ,       30);
   
   
+  // GRIDS
   // grid =  generateEmptyGrid(cols, rows);
+
+
+  // CREATE CLASS MAP -- basically make it so it does this but for everyspot in the template now.
+  //the reason the + 4 is there is becuase 3= 5x5 so 3+2 = 5, and the borders take up 2 so    template = 3 (+2) -> 5 + border (+2)   so instead (+2)+(+2)
+  someGrid = new SingleGrid(Number(homeMapTemplate[1][1]+4), Number(homeMapTemplate[1][1]+4));
+  someGrid.generateGrid();
 
   gridOne = new SingleGrid(14, 8);
   gridOne.generateGrid();
@@ -111,18 +127,6 @@ class Player {
       this.y += this.speed/sqrt(2);
       this.x -= this.speed/sqrt(2);
     }
-
-
-
-    // // right / east
-    // if (keyIsDown(68) && !keyIsDown(65)) {
-    //   this.x += this.speed;
-    // }
-
-    // // left / west
-    // if (keyIsDown(65) && !keyIsDown(68)) {
-    //   this.x -= this.speed;
-    // }
   }
 
   //   checkWithinGrid(someCols, someRows) {
@@ -185,7 +189,6 @@ class Button {
   }
 }
 
-
 class SingleGrid {
   constructor(cols, rows) {
     this.rows = rows;
@@ -223,7 +226,7 @@ class SingleGrid {
         if (this.grid[y][x] === 1) {
           fill(0);
           // noStroke();
-          stroke(30);
+          stroke(45);
         }
 
         rect(x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
@@ -234,16 +237,20 @@ class SingleGrid {
 
 
 function draw() {
-  background(60);
-
   if (gameState === "start") {
+    background(60);
     displayStartScreen();
   }
   else if (gameState === "ongoing") {
+    background(0);
 
     // displayGrid();
 
-    displayOneGrid();
+    //ok
+    someGrid.displayGrid();
+
+
+    //displayOneGrid();
 
     you.move();
     you.display();
@@ -254,7 +261,6 @@ function displayStartScreen() {
 
   fill(255);
   textAlign(CENTER);
-  // text("start screen", width/2, height/2);
 
   startButton.display();
   instructionButton.display();
@@ -276,16 +282,38 @@ function mousePressed() {
 function keyPressed() {
 }
 
-// function movePlayerBetweenGrids() {
 
-// }
+// add to map class
+function generateMap(mapTemplate) {
+  newMap = [];
+  for (let y= 0; y < mapTemplate.length; y++) {
+    newMap.push([]);
+    for (let x = 0; x < mapTemplate[y].length; x++) {
 
-function keyReleased() {
+      if (Number(mapTemplate[y][x]) === 0) {
+        //no grid, stays as a zero
+        newMap[y].push(0);
+      }
 
+      //unique map inputs need to go above this one 
+      // if [y][x] = r then generate a random sized grid
+      // if [x][x] = g then generate a grid that contains one of the goals
+
+      else {
+        someGrid = new SingleGrid(Number(mapTemplate[y][x]+2), Number(mapTemplate[y][x]+2));
+
+        // newMap[y].push(generateGrid(Number(mapTemplate[y][x]+2), Number(mapTemplate[y][x]+2)));
+
+        newMap[y].push(someGrid)
+      }
+    }
+  }
 }
 
 
 
+
+//not being used for anything except that random hard coded grid that is also not being used for anything
 function displayGrid() {
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -297,7 +325,7 @@ function displayGrid() {
   }
 }
 
-
+//same as above
 function generateEmptyGrid(theCols, theRows) {
   let newGrid = [];
   for (let y = 0; y < theRows; y++) {
