@@ -16,6 +16,7 @@ let gameState = "start";
 let you;
 let instructionButton;
 let startButton;
+let soundButton;
 
 let gridOne; 
 
@@ -27,20 +28,23 @@ let map;
 
 //hard coded Map
 let homeMapTemplate = [[0, 1, 0],
+  // eslint-disable-next-line indent
                        [1, 3, 1],
+  // eslint-disable-next-line indent
                        [0, 1, 0]];
 
 //homeMap = generateMap(homeMapTemplate);
 
 let grid;
-let cols = 4;
-let rows = 6;
+let cols = 8; // max 8 // min 4
+let rows = 7; // max 7 // min 4
 const CELL_SIZE = 100;
 let gridWidth = cols*CELL_SIZE;
 let gridHeight = rows*CELL_SIZE;
 
 let currentGrid = 1;
 let someGrid;
+let help = (1,1);
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -49,9 +53,14 @@ function setup() {
   // BUTTONS
   // all buttons made should have rgb values (each) > 20
 
-  instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 10);
+  //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize
 
-  startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" ,       30);
+  instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 15);
+  //help button brings up the same menu but can be accessed while gameState = "ongoing"
+
+  startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" ,       35);
+
+  soundButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "🕪", 20);
   
   
   // GRIDS
@@ -61,7 +70,8 @@ function setup() {
   // CREATE CLASS MAP -- basically make it so it does this but for everyspot in the template now.
   //the reason the + 4 is there is becuase 3= 5x5 so 3+2 = 5, and the borders take up 2 so    template = 3 (+2) -> 5 + border (+2)   so instead (+2)+(+2)
   someGrid = new SingleGrid(Number(homeMapTemplate[1][1]+4), Number(homeMapTemplate[1][1]+4));
-  someGrid.generateGrid();
+  //it is not making a grid lol
+  //someGrid.generateGrid();
 
   gridOne = new SingleGrid(14, 8);
   gridOne.generateGrid();
@@ -132,13 +142,13 @@ class Player {
   //   checkWithinGrid(someCols, someRows) {
 
 
-    // from bouncing ball demo
-    // if (someBall.x > width - someBall.radius || someBall.x < 0 + someBall.radius) {
-    //   someBall.dx *= -1;
-    // }
-    // if (someBall.y > height - someBall.radius || someBall.y < 0 + someBall.radius) {
-    //   someBall.dy *= -1;
-    // }
+  // from bouncing ball demo
+  // if (someBall.x > width - someBall.radius || someBall.x < 0 + someBall.radius) {
+  //   someBall.dx *= -1;
+  // }
+  // if (someBall.y > height - someBall.radius || someBall.y < 0 + someBall.radius) {
+  //   someBall.dy *= -1;
+  // }
 
 
 //     //               left wall                                              right wall                                    //top wall                                                             // bottom wall       o-o
@@ -158,7 +168,7 @@ class Button {
     this.y = y - this.h / 2;
     this.c = color(r, g, b);
     this.text = theText;
-    this.tSize = tSize
+    this.tSize = tSize;
   }
 
   display(){
@@ -181,11 +191,51 @@ class Button {
   }
 
   isHoveredOn() {
-    return(mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h );
-}
+    return mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h ;
+  }
 
   isClicked() {
-    return(mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h );
+    return mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h ;
+  }
+}
+
+class Map {
+  constructor(arrayOfGrids) {
+    this.cols = arrayOfGrids.length;
+    this.rows = arrayOfGrids[0].length;
+
+    this.currentGrid;
+    this.gridArray = arrayOfGrids;
+  }
+
+  generateMap() {
+    newMap = [];
+    for (let y= 0; y < arrayOfGrids.length; y++) {
+      newMap.push([]);
+      for (let x = 0; x < arrayOfGrids[y].length; x++) {
+  
+        if (Number(arrayOfGrids[y][x]) === 0) {
+          //no grid, stays as a zero
+          newMap[y].push(0);
+        }
+  
+        //unique map inputs need to go above this one 
+        // if [y][x] = r then generate a random sized grid
+        // if [x][x] = g then generate a grid that contains one of the goals
+  
+        else {
+          someGrid = new SingleGrid(Number(arrayOfGrids[y][x]+2), Number(arrayOfGrids[y][x]+2));
+  
+          // newMap[y].push(generateGrid(Number(mapTemplate[y][x]+2), Number(mapTemplate[y][x]+2)));
+  
+          newMap[y].push(someGrid);
+        }
+      }
+    }
+  }
+
+  transferBetweenGrids() {
+
   }
 }
 
@@ -195,7 +245,6 @@ class SingleGrid {
     this.cols = cols;
     this.gridWidth = this.cols*CELL_SIZE;
     this.gridHeight = this.rows*CELL_SIZE;
-
   }
 
   generateGrid() {
@@ -244,10 +293,11 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-    // displayGrid();
+    displayGrid();
 
     //ok
-    someGrid.displayGrid();
+    // for (let grid of )
+    //someGrid.displayGrid();
 
 
     //displayOneGrid();
@@ -262,8 +312,22 @@ function displayStartScreen() {
   fill(255);
   textAlign(CENTER);
 
+  //buttons
   startButton.display();
   instructionButton.display();
+  soundButton.display();
+
+  //image border
+  fill(240);
+  rect(width/2 - 350, 110, 700, 400);
+
+  //replace with image
+  fill(10);
+  rect(width/2 - 345, 115, 690, 390);
+
+  //side bars
+  rect(0, 0, width/2-500, height);
+  rect(width/2+500, 0, width, height);
 }
 
 function displayOneGrid() {
@@ -282,7 +346,7 @@ function mousePressed() {
 function keyPressed() {
 }
 
-
+// erm
 // add to map class
 function generateMap(mapTemplate) {
   newMap = [];
@@ -300,14 +364,16 @@ function generateMap(mapTemplate) {
       // if [x][x] = g then generate a grid that contains one of the goals
 
       else {
-        someGrid = new SingleGrid(Number(mapTemplate[y][x]+2), Number(mapTemplate[y][x]+2));
+        //huh             ---------------------------------------------------------------
+        let aGrid = new SingleGrid(Number(mapTemplate[y][x]), Number(mapTemplate[y][x]));
 
         // newMap[y].push(generateGrid(Number(mapTemplate[y][x]+2), Number(mapTemplate[y][x]+2)));
 
-        newMap[y].push(someGrid)
+        newMap[y].push(aGrid);
       }
     }
   }
+  return aGrid;
 }
 
 
