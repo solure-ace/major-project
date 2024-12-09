@@ -1,6 +1,6 @@
 // Major Project
 // Avery Walker
-// December 5th
+// December 9th 2024
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
@@ -8,14 +8,22 @@
 
 //TO DO LIST//
 
-// make a temporary way to go between grids
-// use Collide2d to give each grid in a level a polygon that the player must stay within
-// egGrid.generateGrid() <- put this in a constructor???
+// make a temporary way to go between grids [ ]
+
+// use Collide2d to give each grid in a level a polygon that the player must stay within [ ]
+
+//think of something to use maps for??
+
+//have player.x && player.y be dependant on the xy of the grid in so 
+//that when windowResized() the player stays in a consistant spot within the  grid  [ ]
+
+//replace displayOneGrid with something more relevant (egLevel.currentGrid ect)[ ]
 
 let gameState = "start";
 
-//plater
+//player
 let you;
+
 
 //buttons
 let instructionButton;
@@ -23,7 +31,7 @@ let startButton;
 let soundButton;
 
 let testingLevel;
-let currentLevel = 0
+let currentLevel = 0;
 //let currentGrid = 1;
 
 const CELL_SIZE = 100;
@@ -38,9 +46,9 @@ let gridHeight = rows*CELL_SIZE;
 //sound/music
 let buttonClickedSound;
 
-// function preload() {
-//   buttonClickedSound = loadSound("");
-// }
+function preload() {
+  buttonClickedSound = loadSound("zipclick.flac");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -55,6 +63,7 @@ function setup() {
   // LEVELS
   testingLevel = new Level();
   testingLevel.level = testingLevel.generateLevel();
+  //testingLevel.generateEachGrid();
 }
 
 class Player {
@@ -186,6 +195,8 @@ class SingleGrid {
     this.cols = cols;
     this.gridWidth = this.cols*CELL_SIZE;
     this.gridHeight = this.rows*CELL_SIZE;
+
+    this.generateGrid();
   }
 
   generateGrid() {
@@ -225,21 +236,18 @@ class SingleGrid {
   }
 }
 
-// replace "class Map" with this once it works
 class Level  {
   constructor() {
     //temporary
     // this.template = [[1, 1],
     //                  [1, 1]]; // 4 3x3 Grids
+    this.template = [[1, 2]]; //1 3x3 grid
 
-    this.template = [[1]]; //1 3x3 grid
 
-   this.currentGrid;
-   //array
+    this.currentGrid;
 
-   //when calling this.level it returns undefined
-
-   this.chosenStartingGrid = false;                 
+    //choses the first grid with this.template[y][x] > 0
+    this.chosenStartingGrid = false;                 
   }
 
   generateLevel() {
@@ -255,27 +263,19 @@ class Level  {
         //else if [y][x]=g push goal
         //else if [y][x]=r push random
 
-        //else                                         v ((+2 for 3x3) + (+2 for grid border allowance))
+        //else                                         v ((+2 for translating the template) + (+2 for grid border allowance))
         let aGrid = new SingleGrid(this.template[y][x]+4, this.template[y][x]+4);
 
-        //aGrid.grid = aGrid.generateGrid(); // need to find a better way to create and store grids..
-
-        //not this
-        //this.aLevel[y].push(aGrid.generateGrid());
         this.aLevel[y].push(aGrid);
 
-        if (this.chosenStartingGrid && this.template > 0) { // add ! for letters later
+        if (!this.chosenStartingGrid && this.template[y][x] > 0) { // add ! for letters later
           this.currentGrid = [y, x];
-          this.chosenStartingGrid = false;
+          this.chosenStartingGrid = true;
         }
       }
     }
     return this.aLevel;
-    // at this point now 2 single grids exist within "testingLevel.level" there should be four grids
   }
-
-
-  //add a function here to generate each grid within level
 }
 
 
@@ -288,7 +288,7 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-    //displayGrid();
+    testingLevel.level[   testingLevel.currentGrid[0]  ]  [  testingLevel.currentGrid[1]  ].displayGrid();
 
     you.move();
     you.display();
@@ -318,6 +318,8 @@ function displayStartScreen() {
   rect(width/2+500, 0, width, height);
 }
 
+
+//replace with function that works with my new level system...
 function displayOneGrid() {
   if (currentGrid === 1) {
     gridOne.displayGrid();
@@ -378,8 +380,7 @@ function generateEmptyGrid(theCols, theRows) {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   
-
-  if (gameState = "start") {
+  if (gameState === "start") {
     startButton.x = width/2 - startButton.w/2;
     instructionButton.x = width/2 - instructionButton.w/2;
     soundButton.x = width/2 - soundButton.w/2 + 80;
