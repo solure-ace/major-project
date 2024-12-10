@@ -19,6 +19,8 @@
 
 //replace displayOneGrid with something more relevant (egLevel.currentGrid ect)[ ]
 
+
+//gameStates
 let gameState = "start";
 
 //player
@@ -31,20 +33,19 @@ let startButton;
 let soundButton;
 
 let testingLevel;
-let currentLevel = 0;
-//let currentGrid = 1;
+//let currentLevel = 0;
 
+//grids
 const CELL_SIZE = 100;
-
-//for testing (to be deleted)
-let grid;
-let cols = 8; // max 8 // min 4
-let rows = 7; // max 7 // min 4
-let gridWidth = cols*CELL_SIZE;
-let gridHeight = rows*CELL_SIZE;
+// max colsmax  8 // min 4
+// max 7 // min 4
 
 //sound/music
 let buttonClickedSound;
+let isSoundOn = true;
+
+//menus
+let soundMenuOpen = false;
 
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
@@ -56,9 +57,6 @@ function setup() {
 
   // BUTTONS
   createButtons();
-
-  // GRIDS
-  grid =  generateEmptyGrid(cols, rows);
 
   // LEVELS
   testingLevel = new Level();
@@ -82,7 +80,6 @@ class Player {
   display() {
     noStroke();
     fill(150, 200, 230);
-    /////////////////////////////////////////// he pill
     rect(this.x, this.y, this.width, this.height, 50);
   }
 
@@ -184,8 +181,15 @@ class Button {
   }
 
   isClicked() {
-    return mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h ;
-    //put clicking sound effect here
+    if (mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h) {
+      if (isSoundOn) {
+        buttonClickedSound.play();
+      }
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 }
 
@@ -290,6 +294,8 @@ function draw() {
 
     testingLevel.level[   testingLevel.currentGrid[0]  ]  [  testingLevel.currentGrid[1]  ].displayGrid();
 
+
+
     you.move();
     you.display();
   }
@@ -316,15 +322,35 @@ function displayStartScreen() {
   //side bars
   rect(0, 0, width/2-500, height);
   rect(width/2+500, 0, width, height);
+
+  //menus
+  displaySoundMenu();
 }
 
+function displaySoundMenu() {
+  if (soundMenuOpen) {
+    openSideMenu();
 
-//replace with function that works with my new level system...
-function displayOneGrid() {
-  if (currentGrid === 1) {
-    gridOne.displayGrid();
+    //toggleSoundButton.display();
+
+    //close menu - spacebar
+    if (keyIsDown(32)) {
+      soundMenuOpen = false;
+    }
   }
 }
+
+//need to put in draw loop??
+function openSideMenu() {
+  fill(50);
+
+  for (let i = 0; i <= 500; i++) {
+    rectMode(CORNERS);
+    rect(0, 0, width/2 - i, height);
+  }
+  rectMode(CORNER);
+}
+
 
 function createButtons() {
   // all buttons made should have rgb values (each) > 20
@@ -335,44 +361,34 @@ function createButtons() {
   startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" , 35);
 
   soundButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "🕪", 20);
+
+  toggleSoundButton = new Button(width/2, height/2, 100, 40,    120, 120, 120,    "Sounds:", 20);
+  //sound volume (amp) adjuster button when
 }
 
 
 
 
 function mousePressed() {
-  if (gameState === "start" && startButton.isClicked()) {
-    gameState = "ongoing";
+  if (gameState === "start") {
+
+    //start game
+    if (startButton.isClicked()) {
+      gameState = "ongoing";
+    }
+    
+    if (instructionButton.isClicked()) {
+      //open instructions menu
+    }
   }
+  //toggle sound and music
+  if (soundButton.isClicked()) {
+    soundMenuOpen = true;
+  }
+
 }
 
 function keyPressed() {
-}
-
-
-
-//not being used for anything except that random hard coded grid that is also not being used for anything
-function displayGrid() {
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      fill(200);
-      stroke(180);
-      //rect(x*cellSize + width/2 - cellSize*PASSWORD_LENGTH/2, y*cellSize +100, cellSize, cellSize);
-      rect(x*CELL_SIZE + width/2 - gridWidth/2, y*CELL_SIZE + height/2 - gridHeight/2, CELL_SIZE);
-    }
-  }
-}
-
-//same as above
-function generateEmptyGrid(theCols, theRows) {
-  let newGrid = [];
-  for (let y = 0; y < theRows; y++) {
-    newGrid.push([]);
-    for (let x = 0; x < theCols; x++) {
-      newGrid[y].push(0);
-    }
-  }
-  return newGrid;
 }
 
 
