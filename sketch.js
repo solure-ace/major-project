@@ -3,7 +3,7 @@
 // December 9th 2024
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+//(currentLevel['aLevel'])[0][0].rows <- figured out how to access stuff from my 3d array. cool
 
 
 //TO DO LIST//
@@ -20,6 +20,7 @@
 //replace displayOneGrid with something more relevant (egLevel.currentGrid ect)[ ]
 
 
+
 //gameStates
 let gameState = "start";
 
@@ -27,18 +28,20 @@ let gameState = "start";
 let you;
 
 
-//buttons
+//BUTTONS
 let instructionButton;
 let startButton;
 let soundButton;
 
-let testingLevel;
-//let currentLevel = 0;
 
-//grids
+//GRIDS
 const CELL_SIZE = 100;
 // max colsmax  8 // min 4
 // max 7 // min 4
+
+//LEVELS
+let currentLevel;
+let testingLevel;
 
 //sound/music
 let buttonClickedSound;
@@ -282,6 +285,10 @@ class Level  {
   }
 }
 
+class Menu {
+  //side menu // middle menue // inventory? <- i dont think im making a player inventory
+}
+
 
 
 function draw() {
@@ -335,21 +342,27 @@ function displaySoundMenu() {
 
     //close menu - spacebar
     if (keyIsDown(32)) {
+      closeSideMenu();
       soundMenuOpen = false;
     }
   }
 }
 
-//need to put in draw loop??
+//i want these to animate uhhhhh fix later
 function openSideMenu() {
   fill(50);
 
-  for (let i = 0; i <= 500; i++) {
-    rectMode(CORNERS);
-    rect(0, 0, width/2 - i, height);
-  }
-  rectMode(CORNER);
+  let rectW = 500; // width/2-500
+  rect(0, 0, rectW, height);
 }
+
+function closeSideMenu() {
+  let rectW = width/2-500;
+  for (let i = rectW; rectW < 0; i--) {
+    rect(0, 0, rectW, height);
+  }
+}
+
 
 
 function createButtons() {
@@ -375,6 +388,7 @@ function mousePressed() {
     //start game
     if (startButton.isClicked()) {
       gameState = "ongoing";
+      currentLevel = testingLevel;
     }
     
     if (instructionButton.isClicked()) {
@@ -388,8 +402,9 @@ function mousePressed() {
 
 }
 
-function keyPressed() {
-}
+// function keyPressed() {
+//   if (keyCode === 39 && (currentLevel['aLevel'])[0][0].rows)
+// }
 
 
 
