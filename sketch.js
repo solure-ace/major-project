@@ -27,12 +27,22 @@ let gameState = "start";
 //player
 let you;
 
+//player boundaries
+// turn into an object
+let leftTopCorner;
+let rightTopCorner;
+let leftBottomCorner;
+let rightBottomCorner;
+//will need more points to have exits/enterances work
+
 
 //BUTTONS
 let instructionButton;
 let startButton;
-let soundButton;
+let menuButton;
 
+//MENU
+//what
 
 //GRIDS
 const CELL_SIZE = 100;
@@ -48,11 +58,15 @@ let buttonClickedSound;
 let isSoundOn = true;
 
 //menus
-let soundMenuOpen = false;
+let MenuOpen = false;
+
+
 
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 }
+
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -198,6 +212,7 @@ class Button {
 
 class SingleGrid {
   constructor(cols, rows) {
+    //should have a this.x & y so i can do stuff????????????????????
     this.rows = rows;
     this.cols = cols;
     this.gridWidth = this.cols*CELL_SIZE;
@@ -212,7 +227,7 @@ class SingleGrid {
       this.grid.push([]);
       for (let x = 0; x < this.cols; x++) {
 
-        //top border
+        //top border   //bottom border   //left border    //right border
         if (y === 0 || y === this.rows-1 || x === 0 || x === this.cols-1) {
           this.grid[y].push(1);
         }
@@ -241,6 +256,28 @@ class SingleGrid {
       }
     }
   }
+
+  boundaries() {
+    for (let y = 0; y < this.rows; y++){
+      for (let x = 0; x < this.cols; x++) {
+        if (this.grid[y][x] === 1) {
+          //do nothing
+        }
+
+        //
+        else if (this.grid[y][x] === 0) {
+
+          //check is top left corner
+          if (this.grid[y-1][x-1] === 1) {
+            //topLeftCorner = X:: x*CELL_SIZE + width/2 - this.gridWidth/2, Y::  y*CELL_SIZE+ height/2
+          }
+
+        }
+      }
+    }
+  }
+
+
 }
 
 class Level  {
@@ -285,16 +322,13 @@ class Level  {
   }
 }
 
-class Menu {
-  //side menu // middle menue // inventory? <- i dont think im making a player inventory
-}
-
 
 
 function draw() {
   if (gameState === "start") {
     background(60);
     displayStartScreen();
+    
   }
   else if (gameState === "ongoing") {
     background(0);
@@ -316,7 +350,7 @@ function displayStartScreen() {
   //buttons
   startButton.display();
   instructionButton.display();
-  soundButton.display();
+  menuButton.display();
 
   //image border
   fill(240);
@@ -331,36 +365,36 @@ function displayStartScreen() {
   rect(width/2+500, 0, width, height);
 
   //menus
-  displaySoundMenu();
+  if (MenuOpen) {
+    displaySoundMenu();
+  }
 }
 
 function displaySoundMenu() {
-  if (soundMenuOpen) {
-    openSideMenu();
+  openSideMenu();
 
-    //toggleSoundButton.display();
+  //toggleSoundButton.display();
 
-    //close menu - spacebar
-    if (keyIsDown(32)) {
-      closeSideMenu();
-      soundMenuOpen = false;
-    }
+  //close menu - spacebar
+  if (keyIsDown(32)) {
+    closeSideMenu();
+    MenuOpen = false;
   }
 }
 
 //i want these to animate uhhhhh fix later
 function openSideMenu() {
-  fill(50);
-
-  let rectW = 500; // width/2-500
-  rect(0, 0, rectW, height);
+  fill(120);
+  
+  for (let rectX = 0 - (width/2-500); rectX < 0; rectX++) {
+    rect(rectX, 0, width/2-500, height);
+  }
 }
 
 function closeSideMenu() {
-  let rectW = width/2-500;
-  for (let i = rectW; rectW < 0; i--) {
-    rect(0, 0, rectW, height);
-  }
+
+  //animate closing
+  rect(0, 0, width/2-500, height);
 }
 
 
@@ -373,7 +407,7 @@ function createButtons() {
 
   startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" , 35);
 
-  soundButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "🕪", 20);
+  menuButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "☰", 16);
 
   toggleSoundButton = new Button(width/2, height/2, 100, 40,    120, 120, 120,    "Sounds:", 20);
   //sound volume (amp) adjuster button when
@@ -396,8 +430,8 @@ function mousePressed() {
     }
   }
   //toggle sound and music
-  if (soundButton.isClicked()) {
-    soundMenuOpen = true;
+  if (menuButton.isClicked()) {
+    MenuOpen = true;
   }
 
 }
@@ -414,6 +448,6 @@ function windowResized() {
   if (gameState === "start") {
     startButton.x = width/2 - startButton.w/2;
     instructionButton.x = width/2 - instructionButton.w/2;
-    soundButton.x = width/2 - soundButton.w/2 + 80;
+    menuButton.x = width/2 - menuButton.w/2 + 80;
   }
 }
