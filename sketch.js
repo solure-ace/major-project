@@ -41,9 +41,6 @@ let instructionButton;
 let startButton;
 let menuButton;
 
-//MENU
-//what
-
 //GRIDS
 const CELL_SIZE = 100;
 // max colsmax  8 // min 4
@@ -57,16 +54,19 @@ let testingLevel;
 let buttonClickedSound;
 let isSoundOn = true;
 
-//menus
+//Menus
 let MenuOpen = false;
+let sideMenuOpen = false;
+//let hasFinishedOpening = false;
 
+let rectX = -350;
+let rectDX = 20;
+// let sideMenuOpen = false;
 
 
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 }
-
-
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -78,8 +78,12 @@ function setup() {
   // LEVELS
   testingLevel = new Level();
   testingLevel.level = testingLevel.generateLevel();
+
+  currentLevel = testingLevel;
   //testingLevel.generateEachGrid();
 }
+
+
 
 class Player {
   constructor(x, y) {
@@ -101,44 +105,45 @@ class Player {
   }
 
   move() {
-
+    if (this.canMove) {
     // ^
-    if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
-      this.y -= this.speed;
-    }
-    // v
-    else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
-      this.y += this.speed;
-    }
-    // <
-    else if (keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87) && !keyIsDown(83)) {
-      this.x += this.speed;
-    }
-    // >
-    else if (keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87) && !keyIsDown(83)) {
-      this.x -= this.speed;
-    }
+      if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
+        this.y -= this.speed;
+      }
+      // v
+      else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
+        this.y += this.speed;
+      }
+      // <
+      else if (keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87) && !keyIsDown(83)) {
+        this.x += this.speed;
+      }
+      // >
+      else if (keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87) && !keyIsDown(83)) {
+        this.x -= this.speed;
+      }
 
 
-    // v>
-    if (keyIsDown(83) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87)) {
-      this.y += this.speed/sqrt(2);
-      this.x += this.speed/sqrt(2);
-    }
-    // ^>
-    else if (keyIsDown(87) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(83)) {
-      this.y -= this.speed/sqrt(2);
-      this.x += this.speed/sqrt(2);
-    }
-    //^<
-    else if (keyIsDown(87) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(83)) {
-      this.y -= this.speed/sqrt(2);
-      this.x -= this.speed/sqrt(2);
-    }
-    //v<
-    else if (keyIsDown(83) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87)) {
-      this.y += this.speed/sqrt(2);
-      this.x -= this.speed/sqrt(2);
+      // v>
+      if (keyIsDown(83) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(87)) {
+        this.y += this.speed/sqrt(2);
+        this.x += this.speed/sqrt(2);
+      }
+      // ^>
+      else if (keyIsDown(87) && keyIsDown(68) && !keyIsDown(65) && !keyIsDown(83)) {
+        this.y -= this.speed/sqrt(2);
+        this.x += this.speed/sqrt(2);
+      }
+      //^<
+      else if (keyIsDown(87) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(83)) {
+        this.y -= this.speed/sqrt(2);
+        this.x -= this.speed/sqrt(2);
+      }
+      //v<
+      else if (keyIsDown(83) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87)) {
+        this.y += this.speed/sqrt(2);
+        this.x -= this.speed/sqrt(2);
+      }
     }
   }
 
@@ -326,26 +331,35 @@ class Level  {
 
 function draw() {
   if (gameState === "start") {
-    background(60);
     displayStartScreen();
     
   }
   else if (gameState === "ongoing") {
     background(0);
 
-    testingLevel.level[   testingLevel.currentGrid[0]  ]  [  testingLevel.currentGrid[1]  ].displayGrid();
+
+    //               these access from currentGrid to change the grid change the values in currentGrid NOT change the [0] and [1]
+    currentLevel.level[   testingLevel.currentGrid[0]  ]  [  testingLevel.currentGrid[1]  ].displayGrid();
 
 
 
     you.move();
     you.display();
+
+    if (sideMenuOpen) {
+      openSideMenu();
+      displaySideMenu();
+    }
   }
 }
 
 function displayStartScreen() {
+  //background(47, 87, 99); //teal
+  background(58, 38, 84); //dark-medium purple)
 
   fill(255);
   textAlign(CENTER);
+  you.CanMove = true;
 
   //buttons
   startButton.display();
@@ -353,66 +367,106 @@ function displayStartScreen() {
   menuButton.display();
 
   //image border
-  fill(240);
+  fill(0);
   rect(width/2 - 350, 110, 700, 400);
 
   //replace with image
-  fill(10);
+  //fill(10);
+  fill(27, 5, 43); //dark purple
   rect(width/2 - 345, 115, 690, 390);
 
   //side bars
+  // fill(12, 25, 43); // Navy
+  //fill(27, 5, 43); //dark purple
+  fill(0);
   rect(0, 0, width/2-500, height);
   rect(width/2+500, 0, width, height);
 
-  //menus
-  if (MenuOpen) {
-    displaySoundMenu();
+  if (sideMenuOpen) {
+    openSideMenu();
+
+    //you.canMove = false;
+
+    if (keyIsDown(32)) {
+      closeSideMenu();
+    }
+
+    displaySideMenu();
   }
+
 }
 
-function displaySoundMenu() {
-  openSideMenu();
 
-  //toggleSoundButton.display();
-
-  //close menu - spacebar
-  if (keyIsDown(32)) {
-    closeSideMenu();
-    MenuOpen = false;
-  }
-}
-
-//i want these to animate uhhhhh fix later
 function openSideMenu() {
-  fill(120);
   
-  for (let rectX = 0 - (width/2-500); rectX < 0; rectX++) {
-    rect(rectX, 0, width/2-500, height);
+  if (rectX <= 0) {
+    
+    //
+    if (dist(rectX, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
+      rectDX = 12;
+    }
+    else if (dist(rectX, 0, 0, 0) < 40) { 
+      rectDX = 3;
+    }
+    else if (dist(rectX, 0, 0, 0) < 10) { 
+      rectDX = 1;
+    }
+
+    else {
+      rectDX = 20;
+    }
+
+    rectX += rectDX;
   }
+  if (rectX > 0) {
+    rectX = 0;
+  }
+  
 }
+
+//cant close because openSideMenu is hogging it uhhh
 
 function closeSideMenu() {
-
-  //animate closing
-  rect(0, 0, width/2-500, height);
+  if (rectX > -350) {
+    rectX -= rectDX;
+  }
+  else{
+    rectX = -350;
+    sideMenuOpen = false;
+  }
 }
 
+function displaySideMenu() {
+  //fill(100);
+  fill(27, 5, 43); //dark purple
 
+  rect(rectX, 0, 350, height);
+}
 
 function createButtons() {
   // all buttons made should have rgb values (each) > 20
 
-  //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize
-  instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 15);
+  //GREY/ORIGINAL COLOURS
+  // //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize
+  // instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 15);
 
-  startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" , 35);
+  // startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" , 35);
 
-  menuButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "☰", 16);
+  // menuButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "☰", 14);
+  //fill(27, 5, 43); //dark purple
+
+  //purple
+  menuButton = new Button(width/2 + 80, height-75, 25, 25,        27, 5, 43,   "☰", 14);
+
+  instructionButton = new Button(width/2, height-75, 100, 25,     27, 5, 43,   "Instructions", 15);
+
+  startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35);
+
+
 
   toggleSoundButton = new Button(width/2, height/2, 100, 40,    120, 120, 120,    "Sounds:", 20);
   //sound volume (amp) adjuster button when
 }
-
 
 
 
@@ -431,14 +485,14 @@ function mousePressed() {
   }
   //toggle sound and music
   if (menuButton.isClicked()) {
-    MenuOpen = true;
+    sideMenuOpen = true;
   }
 
 }
 
-// function keyPressed() {
-//   if (keyCode === 39 && (currentLevel['aLevel'])[0][0].rows)
-// }
+function keyPressed() {
+  //if (keyCode === 39 && (currentLevel['aLevel'])[0][0].rows)
+}
 
 
 
