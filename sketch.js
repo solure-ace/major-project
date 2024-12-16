@@ -56,7 +56,7 @@ let isSoundOn = true;
 
 //Menus
 let MenuOpen = false;
-let sideMenuOpen = false;
+let sideMenuState = "closed";
 //let hasFinishedOpening = false;
 
 let rectX = -350;
@@ -290,7 +290,9 @@ class Level  {
     //temporary
     // this.template = [[1, 1],
     //                  [1, 1]]; // 4 3x3 Grids
-    this.template = [[1, 2]]; //1 3x3 grid
+    this.template = [[1, 2],
+    // eslint-disable-next-line indent
+                     [2, 1]];
 
 
     this.currentGrid;
@@ -337,19 +339,16 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-
+    currentLevel.currentGrid = [1, 0];
     //               these access from currentGrid to change the grid change the values in currentGrid NOT change the [0] and [1]
-    currentLevel.level[   testingLevel.currentGrid[0]  ]  [  testingLevel.currentGrid[1]  ].displayGrid();
+    currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
 
 
 
     you.move();
     you.display();
 
-    if (sideMenuOpen) {
-      openSideMenu();
-      displaySideMenu();
-    }
+    displayOngoingUI();
   }
 }
 
@@ -382,59 +381,64 @@ function displayStartScreen() {
   rect(0, 0, width/2-500, height);
   rect(width/2+500, 0, width, height);
 
-  if (sideMenuOpen) {
-    openSideMenu();
-
-    //you.canMove = false;
-
-    if (keyIsDown(32)) {
-      closeSideMenu();
-    }
-
-    displaySideMenu();
-  }
-
+  //
+  
+  animateSideMenu();
 }
 
 
-function openSideMenu() {
-  
-  if (rectX <= 0) {
-    
-    //
-    if (dist(rectX, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
-      rectDX = 12;
-    }
-    else if (dist(rectX, 0, 0, 0) < 40) { 
-      rectDX = 3;
-    }
-    else if (dist(rectX, 0, 0, 0) < 10) { 
-      rectDX = 1;
-    }
 
-    else {
-      rectDX = 20;
-    }
+function displayOngoingUI() {
+  //while gameState === "ongoing";
+  //change the x & y for menu button
+  menuButton.display();
+  animateSideMenu();
+}
 
-    rectX += rectDX;
-  }
-  if (rectX > 0) {
-    rectX = 0;
-  }
+
+
+function animateSideMenu() {
   
+  //OPENING
+  if (sideMenuState === "opening") {
+    if (rectX <= 0) {
+      
+      //
+      if (dist(rectX, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
+        rectDX = 12;
+      }
+      else if (dist(rectX, 0, 0, 0) < 40) { 
+        rectDX = 2;
+      }
+      else {
+        rectDX = 30;
+      }
+
+
+      rectX += rectDX;
+      
+    }
+    if (rectX > 0  && sideMenuState === "opening") {
+      rectX = 0;
+      sideMenuState = "open";
+    }
+  }
+
+  //CLOSING
+  if (sideMenuState === "closing") {
+    if (rectX > -350 ) {
+      rectX -= rectDX;
+    }
+    else{
+      rectX = -350;
+      sideMenuState = "closed";
+    }
+  }
+
+  displaySideMenu();
 }
 
 //cant close because openSideMenu is hogging it uhhh
-
-function closeSideMenu() {
-  if (rectX > -350) {
-    rectX -= rectDX;
-  }
-  else{
-    rectX = -350;
-    sideMenuOpen = false;
-  }
-}
 
 function displaySideMenu() {
   //fill(100);
@@ -442,6 +446,7 @@ function displaySideMenu() {
 
   rect(rectX, 0, 350, height);
 }
+
 
 function createButtons() {
   // all buttons made should have rgb values (each) > 20
@@ -483,15 +488,24 @@ function mousePressed() {
       //open instructions menu
     }
   }
-  //toggle sound and music
+
+  //settings
   if (menuButton.isClicked()) {
-    sideMenuOpen = true;
+    if (sideMenuState === "closed") {
+      sideMenuState = "opening";
+    }
+    if (sideMenuState === "open") {
+      sideMenuState = "closing";
+    }
   }
 
 }
 
 function keyPressed() {
-  //if (keyCode === 39 && (currentLevel['aLevel'])[0][0].rows)
+  // put this in keypressed
+  if (keyCode === 32) {
+    sideMenuState = "closing";
+  }
 }
 
 
@@ -500,6 +514,9 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   
   if (gameState === "start") {
+
+
+
     startButton.x = width/2 - startButton.w/2;
     instructionButton.x = width/2 - instructionButton.w/2;
     menuButton.x = width/2 - menuButton.w/2 + 80;
