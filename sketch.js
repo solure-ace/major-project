@@ -54,15 +54,14 @@ let testingLevel;
 let buttonClickedSound;
 let isSoundOn = true;
 
-//Menus
-let MenuOpen = false;
-let sideMenuState = "closed";
-//let hasFinishedOpening = false;
-
-let rectX = -350;
-let rectDX = 20;
-// let sideMenuOpen = false;
-
+//MENUS
+let sideMenu = {
+  width: 300,
+  x: -300,
+  y: 0,
+  dx: 20,
+  state: "closed",
+};
 
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
@@ -168,7 +167,7 @@ class Player {
 }
 
 class Button {
-  constructor(x, y, w, h, r, g, b, theText, tSize) {
+  constructor(x, y, w, h, r, g, b, theText, tSize, toggle) {
     this.w = w;
     this.h = h;
 
@@ -177,6 +176,7 @@ class Button {
     this.c = color(r, g, b);
     this.text = theText;
     this.tSize = tSize;
+    this.state = toggle; //"on"/"off" || "notToggle" (anything not on/off)
   }
 
   display(){
@@ -194,7 +194,15 @@ class Button {
     textAlign(CENTER, CENTER);
     fill(255);
     textSize(this.tSize);
-    text(`${this.text}`, this.x + this.w/2, this.y + this.h/2);
+
+
+    if (this.state === "notToggle") {
+      text(`${this.text}`, this.x + this.w/2, this.y + this.h/2);
+    }
+
+    else {
+      text(`${this.text} ${this.state}`, this.x + this.w/2, this.y + this.h/2);
+    }
     
   }
 
@@ -203,10 +211,21 @@ class Button {
   }
 
   isClicked() {
+
     if (mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h) {
+
+      
+      if (this.state === "on") {
+        this.state = "off";
+      }
+      else if(this.state === "off"){
+        this.state = "on";
+      }
+
       if (isSoundOn) {
         buttonClickedSound.play();
       }
+
       return true;
     }
     else {
@@ -360,10 +379,14 @@ function displayStartScreen() {
   textAlign(CENTER);
   you.CanMove = true;
 
+
+
   //buttons
   startButton.display();
   instructionButton.display();
   menuButton.display();
+
+
 
   //image border
   fill(0);
@@ -381,9 +404,14 @@ function displayStartScreen() {
   rect(0, 0, width/2-500, height);
   rect(width/2+500, 0, width, height);
 
-  //
-  
+
+
   animateSideMenu();
+
+  if (sideMenu.state === "open") {
+    //display setting/menu buttons
+    toggleSoundButton.display();
+  }
 }
 
 
@@ -400,38 +428,38 @@ function displayOngoingUI() {
 function animateSideMenu() {
   
   //OPENING
-  if (sideMenuState === "opening") {
-    if (rectX <= 0) {
+  if (sideMenu.state === "opening") {
+    if (sideMenu.x <= 0) {
       
       //
-      if (dist(rectX, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
-        rectDX = 12;
+      if (dist(sideMenu.x, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
+        sideMenu.dx = 12;
       }
-      else if (dist(rectX, 0, 0, 0) < 40) { 
-        rectDX = 2;
+      else if (dist(sideMenu.x, 0, 0, 0) < 40) { 
+        sideMenu.dx = 2;
       }
       else {
-        rectDX = 30;
+        sideMenu.dx = 30;
       }
 
 
-      rectX += rectDX;
+      sideMenu.x += sideMenu.dx;
       
     }
-    if (rectX > 0  && sideMenuState === "opening") {
-      rectX = 0;
-      sideMenuState = "open";
+    if (sideMenu.x > 0  && sideMenu.state === "opening") {
+      sideMenu.x = 0;
+      sideMenu.state = "open";
     }
   }
 
   //CLOSING
-  if (sideMenuState === "closing") {
-    if (rectX > -350 ) {
-      rectX -= rectDX;
+  if (sideMenu.state === "closing") {
+    if (sideMenu.x > -350 ) {
+      sideMenu.x -= sideMenu.dx;
     }
     else{
-      rectX = -350;
-      sideMenuState = "closed";
+      sideMenu.x = -350;
+      sideMenu.state = "closed";
     }
   }
 
@@ -444,32 +472,24 @@ function displaySideMenu() {
   //fill(100);
   fill(27, 5, 43); //dark purple
 
-  rect(rectX, 0, 350, height);
+  rect(sideMenu.x, sideMenu.y, sideMenu.width, height);
 }
 
 
 function createButtons() {
-  // all buttons made should have rgb values (each) > 20
+//  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize // "toggle"
 
-  //GREY/ORIGINAL COLOURS
-  // //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize
-  // instructionButton = new Button(width/2, height-75, 100, 25,   100, 100, 100,   "Instructions", 15);
-
-  // startButton = new Button(width/2, height-150, 150, 50,        120, 120, 120,   "Start" , 35);
-
-  // menuButton = new Button(width/2 + 80, height-75, 25, 25,     100, 100, 100,   "☰", 14);
-  //fill(27, 5, 43); //dark purple
 
   //purple
-  menuButton = new Button(width/2 + 80, height-75, 25, 25,        27, 5, 43,   "☰", 14);
+  menuButton = new Button(width/2 + 80, height-75, 25, 25,        27, 5, 43,   "☰", 14, "notToggle");
 
-  instructionButton = new Button(width/2, height-75, 100, 25,     27, 5, 43,   "Instructions", 15);
+  instructionButton = new Button(width/2, height-75, 100, 25,     27, 5, 43,   "Instructions", 15, "notToggle");
 
-  startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35);
+  startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35, "notToggle");
 
 
 
-  toggleSoundButton = new Button(width/2, height/2, 100, 40,    120, 120, 120,    "Sounds:", 20);
+  toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
   //sound volume (amp) adjuster button when
 }
 
@@ -491,21 +511,30 @@ function mousePressed() {
 
   //settings
   if (menuButton.isClicked()) {
-    if (sideMenuState === "closed") {
-      sideMenuState = "opening";
+    if (sideMenu.state === "closed") {
+      sideMenu.state = "opening";
     }
-    if (sideMenuState === "open") {
-      sideMenuState = "closing";
+    if (sideMenu.state === "open") {
+      sideMenu.state = "closing";
     }
   }
+  
+
+  if (toggleSoundButton.isClicked()) {
+    isSoundOn = !isSoundOn;
+  }
+  
 
 }
 
 function keyPressed() {
   // put this in keypressed
   if (keyCode === 32) {
-    sideMenuState = "closing";
+    if (sideMenu.state === "open") {
+      sideMenu.state = "closing";
+    }
   }
+
 }
 
 
@@ -514,8 +543,6 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   
   if (gameState === "start") {
-
-
 
     startButton.x = width/2 - startButton.w/2;
     instructionButton.x = width/2 - instructionButton.w/2;
