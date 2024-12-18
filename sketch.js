@@ -33,6 +33,9 @@ let leftTopCorner;
 let rightTopCorner;
 let leftBottomCorner;
 let rightBottomCorner;
+
+let playerBounds = []; 
+
 //will need more points to have exits/enterances work
 
 
@@ -108,6 +111,7 @@ class Player {
     // ^
       if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
         this.y -= this.speed;
+        //this.y = constrain(this.y - this.speed, 0, height);
       }
       // v
       else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
@@ -144,6 +148,7 @@ class Player {
         this.x -= this.speed/sqrt(2);
       }
     }
+    // this.x = constrain()
   }
 
   //   checkWithinGrid(someCols, someRows) {
