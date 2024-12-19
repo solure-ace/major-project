@@ -182,6 +182,7 @@ class Button {
     this.text = theText;
     this.tSize = tSize;
     this.state = toggle; //"on"/"off" || "notToggle" (anything not on/off)
+
   }
 
   display(){
@@ -247,7 +248,15 @@ class SingleGrid {
     this.gridWidth = this.cols*CELL_SIZE;
     this.gridHeight = this.rows*CELL_SIZE;
 
+    //values for the whole grid
+    this.gridX;
+    this.gridY;
+
     this.generateGrid();
+
+    //for grid boundaries
+    this.top = this.gridY;
+    this.bottom = this.gridY+this.gridHeight;
   }
 
   generateGrid() {
@@ -263,6 +272,7 @@ class SingleGrid {
         else {
           this.grid[y].push(0);
         }
+
       }
     }
   }
@@ -281,9 +291,19 @@ class SingleGrid {
           stroke(45);
         }
 
+        
+        if (y === 0 && x === 0) {
+          this.gridX =  width/2 - this.gridWidth/2 - CELL_SIZE/2;
+          this.gridY =  height/2 - this.gridHeight/2 - CELL_SIZE/2;
+          //console.log(y*CELL_SIZE+ height/2 - this.gridHeight/2);
+          //82.5
+        }
+        
         rect(x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
+        //rect(x*CELL_SIZE + width/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
       }
     }
+    
   }
 
   boundaries() {
@@ -368,9 +388,11 @@ function draw() {
     currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
 
 
-
     you.move();
     you.display();
+
+    fill("red");
+    rect(int(currentLevel.level[0][0].gridX), currentLevel.level[0][0].gridY, 100, 100);
 
     displayOngoingUI();
   }
@@ -542,6 +564,21 @@ function keyPressed() {
 
 }
 
+
+
+function constrainThing() {
+  //constrain to top of grid
+  //add clause for top exit
+
+  //constrain to bottom of grid
+  //add clause for bottom exit
+
+  //constrain to left of grid
+  //yeah
+
+  //constrain to right of grid
+  //mhm
+}
 
 
 function windowResized() {
