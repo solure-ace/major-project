@@ -79,6 +79,7 @@ function setup() {
 
   // LEVELS
   testingLevel = new Level();
+  //changing this to 'aLevel' breaks it idk why eslint wants me to do that
   testingLevel.level = testingLevel.generateLevel();
 
   currentLevel = testingLevel;
@@ -194,13 +195,21 @@ class Button {
       fill(red(this.c) - 20, green(this.c) - 20, blue(this.c) - 20);
     }
 
+    if (gameState === "start") {
+      stroke(this.c);
+    }
+    else {
+      stroke(255);
+    }
+
+
     rect(this.x, this.y, this.w, this.h, this.h/1.2);
 
     //text
     textAlign(CENTER, CENTER);
     fill(255);
     textSize(this.tSize);
-
+    noStroke();
 
     if (this.state === "notToggle") {
       text(`${this.text}`, this.x + this.w/2, this.y + this.h/2);
@@ -242,7 +251,6 @@ class Button {
 
 class SingleGrid {
   constructor(cols, rows) {
-    //should have a this.x & y so i can do stuff????????????????????
     this.rows = rows;
     this.cols = cols;
     this.gridWidth = this.cols*CELL_SIZE;
@@ -251,6 +259,21 @@ class SingleGrid {
     //values for the whole grid
     this.gridX;
     this.gridY;
+
+
+
+    //this.exitMap = new map();
+    //top
+    //this.exitMap.set("topExit", random(1, this.cols-1));
+    //bottom //if true it matches top
+    //this.exitMap.set("bottomExit", this.exitMap.get("topExit"));
+
+    //left
+    // this.exitMap.set("leftExit", random(1, rows-1));
+    //right // match left
+    //this.exitMap.set("rightExit", this.exitMap.get("leftExit"));
+
+
 
     this.generateGrid();
 
@@ -282,8 +305,10 @@ class SingleGrid {
       for (let x = 0; x < this.cols; x++) {
         
         if (this.grid[y][x] === 0) {
-          fill(200);
-          stroke(180);
+          //fill(200);
+          //stroke(180);
+          fill(36, 115, 113);
+          stroke(26, 105, 103);
         }
         if (this.grid[y][x] === 1) {
           fill(0);
@@ -446,8 +471,17 @@ function displayStartScreen() {
 function displayOngoingUI() {
   //while gameState === "ongoing";
   //change the x & y for menu button
+  menuButton.x = width-40;
+  menuButton.y = 15;
+  
+
   menuButton.display();
+
   animateSideMenu();
+  if (sideMenu.state === "open") {
+    //display setting/menu buttons
+    toggleSoundButton.display();
+  }
 }
 
 
@@ -589,5 +623,10 @@ function windowResized() {
     startButton.x = width/2 - startButton.w/2;
     instructionButton.x = width/2 - instructionButton.w/2;
     menuButton.x = width/2 - menuButton.w/2 + 80;
+  }
+
+  if (gameState === "ongoing") {
+    menuButton.x = width-40;
+    menuButton.y = 15;
   }
 }
