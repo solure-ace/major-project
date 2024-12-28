@@ -99,6 +99,10 @@ class Player {
     //used to pause player input during dialouge ect.
     this.canMove = true;
     this.speed = 10;
+
+    this.maxHP = 100;
+    this.currentHp = this.maxHP;
+    
   }
 
   display() {
@@ -112,7 +116,7 @@ class Player {
     // ^
       if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
         this.y -= this.speed;
-        //this.y = constrain(this.y - this.speed, 0, height);
+        //this.y = constrain(this.y - this.speed, currentLevel.level[0][0].gridY, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight);
       }
       // v
       else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
@@ -149,6 +153,9 @@ class Player {
         this.x -= this.speed/sqrt(2);
       }
     }
+                                            //replace with currentLevel.currentGrid whatevers
+    this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
+    this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
     // this.x = constrain()
   }
 
@@ -257,12 +264,17 @@ class SingleGrid {
     this.gridHeight = this.rows*CELL_SIZE;
 
     //values for the whole grid
-    this.gridX;
-    this.gridY;
+    // this.gridX;
+    // this.gridY;
+
+    this.gridX =  width/2 - (this.gridWidth/2-CELL_SIZE/2) - CELL_SIZE/2;
+
+    this.gridY =  height/2 - (this.gridHeight/2-CELL_SIZE/2) - CELL_SIZE/2;
 
 
 
-    //this.exitMap = new map();
+    this.exitMap = new map();
+    this.GeneratedExits = false; //to make sure it only happens once per grid
     //top
     //this.exitMap.set("topExit", random(1, this.cols-1));
     //bottom //if true it matches top
@@ -278,8 +290,8 @@ class SingleGrid {
     this.generateGrid();
 
     //for grid boundaries
-    this.top = this.gridY;
-    this.bottom = this.gridY+this.gridHeight;
+    //this.top = this.gridY;
+    //this.bottom = this.gridY+this.gridHeight;
   }
 
   generateGrid() {
@@ -300,6 +312,10 @@ class SingleGrid {
     }
   }
 
+  generateExits() {
+    //based on where grid is on current level
+  }
+
   displayGrid() {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
@@ -318,8 +334,8 @@ class SingleGrid {
 
         
         if (y === 0 && x === 0) {
-          this.gridX =  width/2 - this.gridWidth/2 - CELL_SIZE/2;
-          this.gridY =  height/2 - this.gridHeight/2 - CELL_SIZE/2;
+          //this.gridX =  width/2 - this.gridWidth/2 - CELL_SIZE/2;
+          //this.gridY =  height/2 - this.gridHeight/2 - CELL_SIZE/2;
           //console.log(y*CELL_SIZE+ height/2 - this.gridHeight/2);
           //82.5
         }
@@ -339,12 +355,7 @@ class SingleGrid {
         }
 
         //
-        else if (this.grid[y][x] === 0) {
-
-          //check is top left corner
-          if (this.grid[y-1][x-1] === 1) {
-            //topLeftCorner = X:: x*CELL_SIZE + width/2 - this.gridWidth/2, Y::  y*CELL_SIZE+ height/2
-          }
+        else if (this.grid[y][x] === 0) {         
 
         }
       }
@@ -359,9 +370,9 @@ class Level  {
     //temporary
     // this.template = [[1, 1],
     //                  [1, 1]]; // 4 3x3 Grids
-    this.template = [[1, 2],
+    this.template = [[2, 2],
     // eslint-disable-next-line indent
-                     [2, 1]];
+                     [2, 2]];
 
 
     this.currentGrid;
@@ -398,6 +409,13 @@ class Level  {
   }
 }
 
+class healthBar {
+  constructor(guy, type, width, height, x, y) {
+
+  }
+}
+
+
 
 
 function draw() {
@@ -408,20 +426,28 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-    currentLevel.currentGrid = [1, 0];
+    // currentLevel.currentGrid = [1, 0];
+    
     //               these access from currentGrid to change the grid change the values in currentGrid NOT change the [0] and [1]
-    currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
+    // currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
+    currentLevel.level[0][0].displayGrid();
 
 
     you.move();
     you.display();
 
     fill("red");
-    rect(int(currentLevel.level[0][0].gridX), currentLevel.level[0][0].gridY, 100, 100);
+    
+    rect(currentLevel.level[0][0].gridX, currentLevel.level[0][0].gridY, 100, 100);
+    rect(currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight, 100, 100);
+    
 
     displayOngoingUI();
   }
 }
+
+
+
 
 function displayStartScreen() {
   //background(47, 87, 99); //teal
@@ -466,8 +492,6 @@ function displayStartScreen() {
   }
 }
 
-
-
 function displayOngoingUI() {
   //while gameState === "ongoing";
   //change the x & y for menu button
@@ -483,8 +507,6 @@ function displayOngoingUI() {
     toggleSoundButton.display();
   }
 }
-
-
 
 function animateSideMenu() {
   
@@ -526,8 +548,6 @@ function animateSideMenu() {
 
   displaySideMenu();
 }
-
-//cant close because openSideMenu is hogging it uhhh
 
 function displaySideMenu() {
   //fill(100);
@@ -599,20 +619,6 @@ function keyPressed() {
 }
 
 
-
-function constrainThing() {
-  //constrain to top of grid
-  //add clause for top exit
-
-  //constrain to bottom of grid
-  //add clause for bottom exit
-
-  //constrain to left of grid
-  //yeah
-
-  //constrain to right of grid
-  //mhm
-}
 
 
 function windowResized() {
