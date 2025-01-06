@@ -101,7 +101,8 @@ class Player {
     this.speed = 10;
 
     this.maxHP = 100;
-    this.currentHp = this.maxHP;
+    this.currentHP = 100;
+
     
   }
 
@@ -111,8 +112,39 @@ class Player {
     rect(this.x, this.y, this.width, this.height, 50);
   }
 
+  displayHealthBar() {
+    if (this.currentHP > 0) {
+      //grey bar
+      let greyBarWidth = 132;
+      let greyX = 30;
+      let greyY = 30;
+  
+      noStroke();
+      fill(100);
+      rect(greyX, greyY, greyBarWidth, 36);
+  
+      //health is green
+      if (this.currentHP >= this.maxHP/2){
+        fill(80, 230, 120);
+      }
+      //health is red
+      else if (this.currentHP <= this.maxHP/5){
+        fill(255, 120, 80);
+      }
+      //health is yellow
+      else {
+        fill(210, 210, 80);
+      }
+      
+      rect(greyX+6, greyY+6, this.currentHP/this.maxHP*120, 24);
+    }
+  }
+  
+
   move() {
     if (this.canMove) {
+
+
     // ^
       if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
         this.y -= this.speed;
@@ -130,6 +162,7 @@ class Player {
       else if (keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87) && !keyIsDown(83)) {
         this.x -= this.speed;
       }
+
 
 
       // v>
@@ -151,32 +184,15 @@ class Player {
       else if (keyIsDown(83) && keyIsDown(65) && !keyIsDown(68) && !keyIsDown(87)) {
         this.y += this.speed/sqrt(2);
         this.x -= this.speed/sqrt(2);
+
+
       }
     }
                                             //replace with currentLevel.currentGrid whatevers
     this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
     this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
-    // this.x = constrain()
+
   }
-
-  //   checkWithinGrid(someCols, someRows) {
-
-
-  // from bouncing ball demo
-  // if (someBall.x > width - someBall.radius || someBall.x < 0 + someBall.radius) {
-  //   someBall.dx *= -1;
-  // }
-  // if (someBall.y > height - someBall.radius || someBall.y < 0 + someBall.radius) {
-  //   someBall.dy *= -1;
-  // }
-
-
-//     //               left wall                                              right wall                                    //top wall                                                             // bottom wall       o-o
-//     if (this.x > width/2 - someCols * CELL_SIZE / 2   &&   this.x + this.width < width/2 + someCols * CELL_SIZE / 2   &&   this.y > height/2 - someRows * CELL_SIZE / 2   &&   this.y + this.height < height/2 + someRows * CELL_SIZE / 2) {
-//       return true;
-//     }
-//     return false;
-//   }
 }
 
 class Button {
@@ -273,7 +289,7 @@ class SingleGrid {
 
 
 
-    this.exitMap = new map();
+    this.exitMap = new Map();
     this.GeneratedExits = false; //to make sure it only happens once per grid
     //top
     //this.exitMap.set("topExit", random(1, this.cols-1));
@@ -409,12 +425,6 @@ class Level  {
   }
 }
 
-class healthBar {
-  constructor(guy, type, width, height, x, y) {
-
-  }
-}
-
 
 
 
@@ -432,14 +442,16 @@ function draw() {
     // currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
     currentLevel.level[0][0].displayGrid();
 
+    damageSquare();
+
 
     you.move();
     you.display();
 
-    fill("red");
-    
-    rect(currentLevel.level[0][0].gridX, currentLevel.level[0][0].gridY, 100, 100);
-    rect(currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight, 100, 100);
+    //markers for grid boundaries (reference)
+    // fill(20);
+    // rect(currentLevel.level[0][0].gridX, currentLevel.level[0][0].gridY, 100, 100);
+    // rect(currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight, 100, 100);
     
 
     displayOngoingUI();
@@ -497,6 +509,8 @@ function displayOngoingUI() {
   //change the x & y for menu button
   menuButton.x = width-40;
   menuButton.y = 15;
+
+  you.displayHealthBar();
   
 
   menuButton.display();
@@ -554,6 +568,20 @@ function displaySideMenu() {
   fill(27, 5, 43); //dark purple
 
   rect(sideMenu.x, sideMenu.y, sideMenu.width, height);
+}
+
+
+function damageSquare() {
+  //like a spike or something to be decided
+
+  fill("red");
+  noStroke();
+  rect(width/2-15, height/2-15, 30, 30);
+
+  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2-15, height/2-15, 30, 30)){
+    you.currentHP-10;
+    //doesnt work??? the arguement works (returns true or false accordingly) but the health does not change
+  }
 }
 
 
