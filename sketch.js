@@ -103,12 +103,18 @@ class Player {
     this.maxHP = 100;
     this.currentHP = 100;
 
+    this.lastHit = 0;
+    this.hitWait = 1000;
+
+    this.state = "alive";
+    this.lives = 3;
+
     
   }
 
   display() {
     noStroke();
-    fill(150, 200, 230);
+    fill(168, 132, 207);
     rect(this.x, this.y, this.width, this.height, 50);
   }
 
@@ -140,12 +146,11 @@ class Player {
     }
   }
   
-
   move() {
     if (this.canMove) {
 
 
-    // ^
+      // ^
       if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
         this.y -= this.speed;
         //this.y = constrain(this.y - this.speed, currentLevel.level[0][0].gridY, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight);
@@ -188,10 +193,15 @@ class Player {
 
       }
     }
-                                            //replace with currentLevel.currentGrid whatevers
+    //replace with currentLevel.currentGrid whatevers
     this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
     this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
+  }
 
+  checkState() {
+    if (this.currentHP <= 0) {
+      this.state = "dead";
+    }
   }
 }
 
@@ -363,20 +373,20 @@ class SingleGrid {
     
   }
 
-  boundaries() {
-    for (let y = 0; y < this.rows; y++){
-      for (let x = 0; x < this.cols; x++) {
-        if (this.grid[y][x] === 1) {
-          //do nothing
-        }
+  // boundaries() {
+  //   for (let y = 0; y < this.rows; y++){
+  //     for (let x = 0; x < this.cols; x++) {
+  //       if (this.grid[y][x] === 1) {
+  //         //do nothing
+  //       }
 
-        //
-        else if (this.grid[y][x] === 0) {         
+  //       //
+  //       else if (this.grid[y][x] === 0) {         
 
-        }
-      }
-    }
-  }
+  //       }
+  //     }
+  //   }
+  // }
 
 
 }
@@ -443,7 +453,7 @@ function draw() {
     currentLevel.level[0][0].displayGrid();
 
     damageSquare();
-
+    healSquare();
 
     you.move();
     you.display();
@@ -574,16 +584,38 @@ function displaySideMenu() {
 function damageSquare() {
   //like a spike or something to be decided
 
+  // if (currentColor === "green" && millis() > lastSwitchedTime + waitTime) {
+  //   currentColor = "yellow";
+  //   lastSwitchedTime = millis();
+  //   console.log(currentColor);
+  // }
+
   fill("red");
   noStroke();
-  rect(width/2-15, height/2-15, 30, 30);
-
-  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2-15, height/2-15, 30, 30)){
-    you.currentHP-10;
-    //doesnt work??? the arguement works (returns true or false accordingly) but the health does not change
+  rect(width/2+50, height/2+50, 30, 30);
+  
+  console.log();
+  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   millis() > you.lastHit + you.hitWait || you.lastHit <= 0){
+    you.currentHP -= 10;
+    you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+    you.lastHit = millis();
+    //console.log(millis() > you.lastHit + you.hitWait);
   }
 }
 
+function healSquare() {
+  //heals
+
+  fill("green");
+  noStroke();
+  rect(width/2-50, height/2-50, 30, 30);
+
+  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2-50, height/2-50, 30, 30)){
+    you.currentHP += 10;
+    you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+    
+  }
+}
 
 function createButtons() {
 //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize // "toggle"
