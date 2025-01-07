@@ -66,6 +66,16 @@ let sideMenu = {
   state: "closed",
 };
 
+//instructions
+let instructions = {
+  width: 750,
+  height: 650,
+  movement: "WASD",
+  attack: "...",
+  goal: "...",
+  state: "closed",
+};
+
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 }
@@ -504,7 +514,7 @@ function displayStartScreen() {
   rect(0, 0, width/2-500, height);
   rect(width/2+500, 0, width, height);
 
-
+  displayInstructions();
 
   animateSideMenu();
 
@@ -524,6 +534,8 @@ function displayOngoingUI() {
   
 
   menuButton.display();
+
+  displayInstructions();
 
   animateSideMenu();
   if (sideMenu.state === "open") {
@@ -580,6 +592,32 @@ function displaySideMenu() {
   rect(sideMenu.x, sideMenu.y, sideMenu.width, height);
 }
 
+function displayInstructions() {
+  if (instructions.state === "opening") {
+    //opening animation
+    instructions.state = "open";
+  }
+  if (instructions.state === "open") {
+
+    //main box
+    rectMode(CENTER);
+    fill(27, 5, 43);
+    stroke(0);
+    strokeWeight(10);
+    rect(width/2, height/2, instructions.width, instructions.height);
+
+    //control segment
+    //rect(width/2-(width-700)/2, height/2, (width-700)/2, height-100);
+
+
+    rectMode(CORNER);
+    noStroke();
+  }
+  if (instructions.state === "closing") {
+    instructions.state = "closed";
+  }
+}
+
 
 function damageSquare() {
   //like a spike or something to be decided
@@ -595,7 +633,7 @@ function damageSquare() {
   rect(width/2+50, height/2+50, 30, 30);
   
   console.log();
-  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   millis() > you.lastHit + you.hitWait || you.lastHit <= 0){
+  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
     you.currentHP -= 10;
     you.currentHP = constrain(you.currentHP, 0, you.maxHP);
     you.lastHit = millis();
@@ -646,7 +684,10 @@ function mousePressed() {
     }
     
     if (instructionButton.isClicked()) {
-      //open instructions menu
+      //displayInstructions();
+      if (instructions.state === "closed") {
+        instructions.state = "opening";
+      }
     }
   }
 
@@ -673,6 +714,9 @@ function keyPressed() {
   if (keyCode === 32) {
     if (sideMenu.state === "open") {
       sideMenu.state = "closing";
+    }
+    else if (instructions.state === "open") {
+      instructions.state = "closing";
     }
   }
 
