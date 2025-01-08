@@ -1,23 +1,22 @@
 // Major Project
 // Avery Walker
-// December 9th 2024
+// January 8th 2025
 //
 // Extra for Experts:
 //(currentLevel['aLevel'])[0][0].rows <- figured out how to access stuff from my 3d array. cool
+// constrain
 
 
 //TO DO LIST//
 
 // make a temporary way to go between grids [ ]
 
-// use Collide2d to give each grid in a level a polygon that the player must stay within [ ]
-
-//think of something to use maps for??
-
 //have player.x && player.y be dependant on the xy of the grid in so 
 //that when windowResized() the player stays in a consistant spot within the  grid  [ ]
 
-//replace displayOneGrid with something more relevant (egLevel.currentGrid ect)[ ]
+// background music
+
+//attacks
 
 
 
@@ -27,6 +26,13 @@ let gameState = "start";
 //player
 let you;
 
+//player stats
+let levelsCompleted = 0;
+let enemysDefeated = 0;
+let points = 0;
+
+let money = 0;
+
 //BUTTONS
 let instructionButton;
 let startButton;
@@ -34,8 +40,8 @@ let menuButton;
 
 //GRIDS
 const CELL_SIZE = 100;
-// max colsmax  8 // min 4
-// max 7 // min 4
+// max cols  8 // min 4
+// max rows 7 // min 4
 
 //LEVELS
 let currentLevel;
@@ -72,9 +78,13 @@ let instructions = {
   state: "closed",
 };
 
+
+
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 }
+
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -116,14 +126,23 @@ class Player {
     this.lives = 3;
 
     this.meleeDMG = 10;
-    this.rangedDMG = 5;
-    
+    this.rangedDMG = 7;
+  }
+
+  displayEffects() {
+    //MELEE ATTACK
+    if (this.meleeAttackAnim === "start") {
+      fill(255, 255, 255, 50);
+      circle(mouseX, mouseY, 100);
+    }
   }
 
   display() {
     noStroke();
     fill(168, 132, 207);
     rect(this.x, this.y, this.width, this.height, 50);
+
+    this.displayEffects();
   }
 
   displayHealthBar() {
@@ -212,10 +231,28 @@ class Player {
     }
   }
 
+  attack() {
+    if (dist(mouseX, mouseY, this.x, this.y) < 150) {
+      this.meleeAttack();
+    }
+  }
+
   meleeAttack() {
     // constrain function my beloved
+    this.meleeAttackAnim = "start";
+    fill(255, 255, 255, 50);
+    circle(mouseX, mouseY, 100);
 
+    //circle(constrain(mouseX, this.x-100, this.x+100), constrain(mouseY, this.y-100, this.y+100), 100, 100);
     //where ever you click with left mouse a circle (hitbox marker (temporary)) appears, anything touching the circle will take dmg
+
+    //OR
+
+    //when mouse clicked check the dist and if its within .... .... then call this funtion.... makes more sense i think
+  }
+
+  rangedAttack() {
+
   }
 }
 
@@ -408,13 +445,14 @@ class SingleGrid {
 class Level  {
   constructor() {
     //temporary
-    // this.template = [[1, 1],
-    //                  [1, 1]]; // 4 3x3 Grids
     this.template = [[2, 2],
     // eslint-disable-next-line indent
                      [2, 2]];
 
+    this.goals = 
 
+
+    //i dont think this V works right now                
     this.currentGrid;
 
     //choses the first grid with this.template[y][x] > 0
@@ -522,10 +560,10 @@ function displayStartScreen() {
 
   animateSideMenu();
 
-  if (sideMenu.state === "open") {
-    //display setting/menu buttons
-    toggleSoundButton.display();
-  }
+  // if (sideMenu.state === "open") {
+  //   //display setting/menu buttons
+  //   toggleSoundButton.display();
+  // }
 }
 
 function displayOngoingUI() {
@@ -594,11 +632,24 @@ function displaySideMenu() {
   fill(27, 5, 43); //dark purple
 
   rect(sideMenu.x, sideMenu.y, sideMenu.width, height);
+
+  //buttons always adjustable
+  toggleSoundButton.x = sideMenu.x + sideMenu.width/2 - toggleSoundButton.w/2; 
+  toggleSoundButton.display();
+
+  //only adjustable in....
+
+  textAlign(CENTER);
+  fill(255);
+  stroke(0);
+  text("Press SPACE to close", sideMenu.x + sideMenu.width/2, height-10);
+  textAlign(LEFT);
+  noStroke();
 }
 
 function displayInstructions() {
   if (instructions.state === "opening") {
-    //opening animation
+    //opening animation if i add one
     instructions.state = "open";
   }
   if (instructions.state === "open") {
@@ -609,14 +660,23 @@ function displayInstructions() {
     stroke(0);
     strokeWeight(10);
     rect(width/2, height/2, instructions.width, instructions.height);
+    rectMode(CORNER);
+    strokeWeight(2);
+
+    
+    textAlign(CENTER);
+    fill(255);
+    stroke(0);
+    textSize(12);
+    text("Press SPACE to close", width/2, instructions.height+40);
+
+    textSize(30);
+    text("- - - - INSTRUCTIONS - - - - ", width/2, 100);
+    textAlign(LEFT);
+    noStroke();
 
     //control segment
     //rect(width/2-(width-700)/2, height/2, (width-700)/2, height-100);
-
-
-    rectMode(CORNER);
-    noStroke();
-    strokeWeight(2);
   }
   if (instructions.state === "closing") {
     instructions.state = "closed";
@@ -681,8 +741,22 @@ function createButtons() {
 
 
 function mousePressed() {
-  if (gameState === "start") {
 
+  if (menuButton.isClicked()) {
+    if (sideMenu.state === "closed") {
+      sideMenu.state = "opening";
+    }
+    if (sideMenu.state === "open") {
+      sideMenu.state = "closing";
+    }
+  }
+
+  if (toggleSoundButton.isClicked()) {
+    isSoundOn = !isSoundOn;
+  }
+
+
+  if (gameState === "start") {
     if (instructions.state !== "open" && instructions.state !== "opening" ) {
       //start game
       if (startButton.isClicked()) {
@@ -698,25 +772,17 @@ function mousePressed() {
 
         sideMenu.state = "closing";
       }
-    
-
-    //settings
-    if (menuButton.isClicked()) {
-      if (sideMenu.state === "closed") {
-        sideMenu.state = "opening";
-      }
-      if (sideMenu.state === "open") {
-        sideMenu.state = "closing";
-      }
-    }
-
-    if (toggleSoundButton.isClicked()) {
-      isSoundOn = !isSoundOn;
     }
   }
-}
 
+  if (gameState === "ongoing") {
+    //if (mouseX < you.x-100 && mouseX > you.x + 100)
+    you.attack();
+  }
 }
+  
+
+
 
 function keyPressed() {
   // put this in keypressed
