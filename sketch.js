@@ -27,18 +27,6 @@ let gameState = "start";
 //player
 let you;
 
-//player boundaries
-// turn into an object
-let leftTopCorner;
-let rightTopCorner;
-let leftBottomCorner;
-let rightBottomCorner;
-
-let playerBounds = []; 
-
-//will need more points to have exits/enterances work
-
-
 //BUTTONS
 let instructionButton;
 let startButton;
@@ -54,8 +42,16 @@ let currentLevel;
 let testingLevel;
 
 //sound/music
-let buttonClickedSound;
 let isSoundOn = true;
+
+let buttonClickedSound; //set
+let swordSlash; //not set
+let gunBlast; //not set
+
+let isMusicOn = true;
+
+let BackgroundMusic; //not set
+
 
 //MENUS
 let sideMenu = {
@@ -119,6 +115,8 @@ class Player {
     this.state = "alive";
     this.lives = 3;
 
+    this.meleeDMG = 10;
+    this.rangedDMG = 5;
     
   }
 
@@ -212,6 +210,12 @@ class Player {
     if (this.currentHP <= 0) {
       this.state = "dead";
     }
+  }
+
+  meleeAttack() {
+    // constrain function my beloved
+
+    //where ever you click with left mouse a circle (hitbox marker (temporary)) appears, anything touching the circle will take dmg
   }
 }
 
@@ -612,6 +616,7 @@ function displayInstructions() {
 
     rectMode(CORNER);
     noStroke();
+    strokeWeight(2);
   }
   if (instructions.state === "closing") {
     instructions.state = "closed";
@@ -643,6 +648,7 @@ function damageSquare() {
 
 function healSquare() {
   //heals
+  let i = 0;
 
   fill("green");
   noStroke();
@@ -677,35 +683,38 @@ function createButtons() {
 function mousePressed() {
   if (gameState === "start") {
 
-    //start game
-    if (startButton.isClicked()) {
-      gameState = "ongoing";
-      currentLevel = testingLevel;
-    }
+    if (instructions.state !== "open" && instructions.state !== "opening" ) {
+      //start game
+      if (startButton.isClicked()) {
+        gameState = "ongoing";
+        currentLevel = testingLevel;
+      }
+      
+      if (instructionButton.isClicked()) {
+        //displayInstructions();
+        if (instructions.state === "closed") {
+          instructions.state = "opening";
+        }
+
+        sideMenu.state = "closing";
+      }
     
-    if (instructionButton.isClicked()) {
-      //displayInstructions();
-      if (instructions.state === "closed") {
-        instructions.state = "opening";
+
+    //settings
+    if (menuButton.isClicked()) {
+      if (sideMenu.state === "closed") {
+        sideMenu.state = "opening";
+      }
+      if (sideMenu.state === "open") {
+        sideMenu.state = "closing";
       }
     }
-  }
 
-  //settings
-  if (menuButton.isClicked()) {
-    if (sideMenu.state === "closed") {
-      sideMenu.state = "opening";
-    }
-    if (sideMenu.state === "open") {
-      sideMenu.state = "closing";
+    if (toggleSoundButton.isClicked()) {
+      isSoundOn = !isSoundOn;
     }
   }
-  
-
-  if (toggleSoundButton.isClicked()) {
-    isSoundOn = !isSoundOn;
-  }
-  
+}
 
 }
 
