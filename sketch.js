@@ -42,6 +42,7 @@ let menuButton;
 const CELL_SIZE = 100;
 // max cols  8 // min 4
 // max rows 7 // min 4
+let gridOfLevel = [0, 0];
 
 //LEVELS
 let currentLevel;
@@ -106,7 +107,9 @@ function setup() {
 
 class Player {
   constructor(x, y) {
-    this.height = 80;
+    //sprite should be about (40x15)2
+    //this.height = 80;
+    this.height = 30;
     this.width = 30;
 
     this.x = x-this.width/2;
@@ -127,6 +130,7 @@ class Player {
 
     this.meleeDMG = 10;
     this.rangedDMG = 7;
+
   }
 
   displayEffects() {
@@ -220,9 +224,41 @@ class Player {
 
       }
     }
-    //replace with currentLevel.currentGrid whatevers
-    this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
-    this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
+
+    // exceptions ------- exiting the Grid 
+    if (this.x  > width/2 - CELL_SIZE/2  &&   this.x < width/2 + CELL_SIZE/2-this.width) {  
+      fill("blue");
+      rect(width/2, height/2, 100, 100);
+
+
+      //           is player on left side
+      //if (dist(this.x, 0, 0, 0) < dist(this.x, 0, width, 0)  &&  this.x < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].x + CELL_SIZE  ) {}
+      // is playerX < gridX + CELL_SIZE(account for border)
+      if (this.y < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE) {
+        this.x = constrain(this.x,
+           width/2 - CELL_SIZE/2 ,
+           currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+      }
+    }
+    else {
+      this.y = constrain(this.y,
+         currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE - this.height);
+    }
+
+    //if (this.y  > height/2 - CELL_SIZE/2 + this.height   &&   this.y < height/2 + CELL_SIZE/2-this.height) {
+    if (this.y  > height/2 - CELL_SIZE/2 - this.height &&   this.y < height/2 + CELL_SIZE/2 - this.height) {  
+      fill("pink");
+      rect(width/2, height/2, 100, 100);
+    }
+    else {
+      this.x = constrain(this.x,
+         currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+         currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    }
+
+    //this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
+    //this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
   }
 
   checkState() {
@@ -340,10 +376,6 @@ class SingleGrid {
     this.gridWidth = this.cols*CELL_SIZE;
     this.gridHeight = this.rows*CELL_SIZE;
 
-    //values for the whole grid
-    // this.gridX;
-    // this.gridY;
-
     this.gridX =  width/2 - (this.gridWidth/2-CELL_SIZE/2) - CELL_SIZE/2;
 
     this.gridY =  height/2 - (this.gridHeight/2-CELL_SIZE/2) - CELL_SIZE/2;
@@ -389,10 +421,6 @@ class SingleGrid {
     }
   }
 
-  generateExits() {
-    //based on where grid is on current level
-  }
-
   displayGrid() {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
@@ -409,37 +437,12 @@ class SingleGrid {
           stroke(45);
         }
 
-        
-        if (y === 0 && x === 0) {
-          //this.gridX =  width/2 - this.gridWidth/2 - CELL_SIZE/2;
-          //this.gridY =  height/2 - this.gridHeight/2 - CELL_SIZE/2;
-          //console.log(y*CELL_SIZE+ height/2 - this.gridHeight/2);
-          //82.5
-        }
-        
         rect(x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
-        //rect(x*CELL_SIZE + width/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
+
       }
     }
     
   }
-
-  // boundaries() {
-  //   for (let y = 0; y < this.rows; y++){
-  //     for (let x = 0; x < this.cols; x++) {
-  //       if (this.grid[y][x] === 1) {
-  //         //do nothing
-  //       }
-
-  //       //
-  //       else if (this.grid[y][x] === 0) {         
-
-  //       }
-  //     }
-  //   }
-  // }
-
-
 }
 
 class Level  {
@@ -501,8 +504,8 @@ function draw() {
     // currentLevel.currentGrid = [1, 0];
     
     //               these access from currentGrid to change the grid change the values in currentGrid NOT change the [0] and [1]
-    // currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid();
-    currentLevel.level[0][0].displayGrid();
+    // currentLevel.level[   currentLevel.currentGrid[0]  ]  [  currentLevel.currentGrid[1]  ].displayGrid(); // replacing currentGrid bc a global variable makes more sense
+    currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid();
 
     damageSquare();
     healSquare();
@@ -663,7 +666,7 @@ function displayInstructions() {
     rectMode(CORNER);
     strokeWeight(2);
 
-    
+    //header and footer
     textAlign(CENTER);
     fill(255);
     stroke(0);
@@ -686,12 +689,6 @@ function displayInstructions() {
 
 function damageSquare() {
   //like a spike or something to be decided
-
-  // if (currentColor === "green" && millis() > lastSwitchedTime + waitTime) {
-  //   currentColor = "yellow";
-  //   lastSwitchedTime = millis();
-  //   console.log(currentColor);
-  // }
 
   fill("red");
   noStroke();
