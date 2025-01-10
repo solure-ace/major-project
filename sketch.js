@@ -129,6 +129,11 @@ class Player {
     this.meleeDMG = 10;
     this.rangedDMG = 7;
 
+    this.exitLeft;
+    this.exitRight;
+    this.exitTop;
+    this.exitBottom;
+
   }
 
   displayEffects() {
@@ -223,78 +228,120 @@ class Player {
       }
     }
 
+    this.moveBetweenGrids();
+    // //put this is a seperate function so its more organized PLEASE!!!!!!!!!!!!!!!
+    // // exceptions ------- exiting the Grid 
+    // if (this.x  > width/2 - CELL_SIZE/2  &&   this.x < width/2 + CELL_SIZE/2-this.width) {  
+    //   fill("blue");
+    //   rect(width/2, height/2, 100, 100);
 
-    //put this is a seperate function so its more organized PLEASE!!!!!!!!!!!!!!!
-    // exceptions ------- exiting the Grid 
-    if (this.x  > width/2 - CELL_SIZE/2  &&   this.x < width/2 + CELL_SIZE/2-this.width) {  
-      fill("blue");
-      rect(width/2, height/2, 100, 100);
 
+    //   //           is player on left side
+    //   //if (dist(this.x, 0, 0, 0) < dist(this.x, 0, width, 0)  &&  this.x < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].x + CELL_SIZE  ) {}
+    //   // is playerX < gridX + CELL_SIZE(account for border)
+    //   if (this.y < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE) {
 
-      //           is player on left side
-      //if (dist(this.x, 0, 0, 0) < dist(this.x, 0, width, 0)  &&  this.x < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].x + CELL_SIZE  ) {}
-      // is playerX < gridX + CELL_SIZE(account for border)
-      if (this.y < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE) {
+    //     //if you can exit on both sides
+    //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //       this.x = constrain(this.x,
+    //         width/2 - CELL_SIZE/2 ,
+    //         currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    //     }
 
-        //if you can exit on both sides
-        if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
-          this.x = constrain(this.x,
-            width/2 - CELL_SIZE/2 ,
-            currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
-        }
+    //     //if you can exit on right only
+    //     else if (!currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter) {
 
-        //if you can exit on right only
-        else if (!currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter) {
-
-        }
-      }
-    }
-    else {
-      this.y = constrain(this.y,
-        currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,
-        currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE - this.height);
-    }
-
-    //if (this.y  > height/2 - CELL_SIZE/2 + this.height   &&   this.y < height/2 + CELL_SIZE/2-this.height) {
-    if (this.y  > height/2 - CELL_SIZE/2 - this.height &&   this.y < height/2 + CELL_SIZE/2 - this.height) {  
-      fill("pink");
-      rect(width/2, height/2, 100, 100);
-      try {
-        if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
-          //do nothing ig
-        }
-      }
-      catch(err) {
-        this.x = constrain(this.x,
-          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
-          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
-      }
-    }
-    else {
-      this.x = constrain(this.x,
-        currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
-        currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
-    }
-
-    //exit right
-    // try {
-    //   if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
-    //     gridOfLevel[1] += 1;
-    //     this.x = 0;
+    //     }
     //   }
     // }
-    // catch(err) {
+    // else {
+    //   this.y = constrain(this.y,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE - this.height);
+    // }
+
+    // //if (this.y  > height/2 - CELL_SIZE/2 + this.height   &&   this.y < height/2 + CELL_SIZE/2-this.height) {
+    // if (this.y  > height/2 - CELL_SIZE/2 - this.height &&   this.y < height/2 + CELL_SIZE/2 - this.height) {  
+    //   fill("pink");
+    //   rect(width/2, height/2, 100, 100);
+    //   try {
+    //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //       //do nothing ig
+    //     }
+    //   }
+    //   catch(err) {
+    //     this.x = constrain(this.x,
+    //       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+    //       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    //   }
+    // }
+    // else {
     //   this.x = constrain(this.x,
     //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
     //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
     // }
-    if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
-      gridOfLevel[1] += 1;
-      this.x = 0;
+
+    // //exit right
+    // // try {
+    // //   if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    // //     gridOfLevel[1] += 1;
+    // //     this.x = 0;
+    // //   }
+    // // }
+    // // catch(err) {
+    // //   this.x = constrain(this.x,
+    // //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+    // //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    // // }
+    // if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //   gridOfLevel[1] += 1;
+    //   this.x = 0;
+    // }
+
+    // //this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
+    // //this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
+  }
+
+  checkExits() {
+    //exit Right
+    try {
+      if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+        this.exitRight = true;
+      }
+    }
+    catch(err) {
+      this.exitRight = false;
     }
 
-    //this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
-    //this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
+    //exit left
+    try {
+      if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter) {
+        this.exitLeft = true;
+      }
+    }
+    catch(err) {
+      this.exitLeft = false;
+    }
+
+    //exit top
+    try {
+      if (currentLevel.level[gridOfLevel[0]-1][gridOfLevel[1]].canEnter) {
+        this.exitTop = true;
+      }
+    }
+    catch(err) {
+      this.exitTop = false;
+    }
+
+    //exit bottom
+    try {
+      if (currentLevel.level[gridOfLevel[0]+1][gridOfLevel[1]].canEnter) {
+        this.exitBottom = true;
+      }
+    }
+    catch(err) {
+      this.exitBottom = false;
+    }
   }
 
   checkState() {
@@ -326,6 +373,189 @@ class Player {
   rangedAttack() {
 
   }
+
+  moveBetweenGrids() {
+
+    this.checkExits();
+    
+    //LEFT AND RIGHT EXITS
+    //is y in middle
+    
+    if (this.y  > height/2 - CELL_SIZE/2 + this.height   &&   this.y < height/2 + CELL_SIZE/2-this.height) {
+      if (this.leftExit === true && this.rightExit === true) {
+
+      }
+      else if (this.leftExit === true ) {
+
+      }
+      else if (this.rightExit === true) {
+
+      }
+      else {
+        this.x = constrain(this.x, //# being constrained
+          currentLevel.level[0][0].gridX + CELL_SIZE, //min
+          currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width); //max
+      }
+    }
+
+    //TOP AND BOTTOM EXITS
+    //is x in middle
+    //FOR SOME REASON THIS RETURNS FALSE V 0-0 HELP
+    if (this.x  > width/2 - CELL_SIZE/2  &&   this.x < width/2 + CELL_SIZE/2-this.width) {
+      if (this.topExit && this.bottomExit) {
+        constrain(this.y,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight);
+      }
+
+      else if (this.topExit) {
+        constrain(this.y,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE);
+      }
+
+      else if (this.bottomExit) {
+        constrain(this.y,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE,
+          currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight + CELL_SIZE);
+        rectMode(CORNERS);
+        fill(255);
+        rect(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight + CELL_SIZE);
+        rectMode(CORNER);
+      }
+
+      else {
+        this.y = constrain(this.y, // # being constrained
+          currentLevel.level[0][0].gridY + CELL_SIZE, // min
+          currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);  //max
+      }
+    }
+
+    else { // if not x in middle
+      this.y = constrain(this.y, // # being constrained
+        currentLevel.level[0][0].gridY + CELL_SIZE, // min
+        currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);  //max
+    }
+
+    // if (this.x  > width/2 - CELL_SIZE/2  &&   this.x < width/2 + CELL_SIZE/2-this.width) {  
+    //   fill("blue");
+    //   rect(width/2, height/2, 100, 100);
+
+
+    //   if (this.y < currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].y + CELL_SIZE) {
+
+    //     //if you can exit on both sides
+    //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //       this.x = constrain(this.x,
+    //         width/2 - CELL_SIZE/2 ,
+    //         currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    //     }
+
+    //     //if you can exit on right only
+    //     else if (!currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter) {
+
+    //     }
+    //   }
+    // }
+    // else {
+    //   this.y = constrain(this.y,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE - this.height);
+    // }
+
+    // //if (this.y  > height/2 - CELL_SIZE/2 + this.height   &&   this.y < height/2 + CELL_SIZE/2-this.height) {
+    // if (this.y  > height/2 - CELL_SIZE/2 - this.height &&   this.y < height/2 + CELL_SIZE/2 - this.height) {  
+    //   fill("pink");
+    //   rect(width/2, height/2, 100, 100);
+    //   try {
+    //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //       //do nothing ig
+    //     }
+    //   }
+    //   catch(err) {
+    //     this.x = constrain(this.x,
+    //       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+    //       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    //   }
+    // }
+    // else {
+    //   this.x = constrain(this.x,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    // }
+
+
+
+
+
+    //exit right
+    // try {
+    //   if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+    //     gridOfLevel[1] += 1;
+    //     this.x = 0;
+    //   }
+    // }
+    // catch(err) {
+    //   this.x = constrain(this.x,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,
+    //     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE-this.width);
+    // }
+
+    //updates coords when you move
+    if (this.x > width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+      gridOfLevel[1] += 1;
+      this.x = 0;
+    }
+
+
+
+
+    //contain in grid normal
+    //this.y = constrain(this.y, currentLevel.level[0][0].gridY + CELL_SIZE, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight - CELL_SIZE - this.height);
+    //this.x = constrain(this.x, currentLevel.level[0][0].gridX + CELL_SIZE,currentLevel.level[0][0].gridX + currentLevel.level[0][0].gridWidth - CELL_SIZE-this.width);
+  }
+
+  // checkExits() {
+  //   //exit Right
+  //   try {
+  //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
+  //       this.exitRight = true;
+  //     }
+  //   }
+  //   catch(err) {
+  //     this.exitRight = false;
+  //   }
+
+  //   //exit left
+  //   try {
+  //     if (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]-1].canEnter) {
+  //       this.exitLeft = true;
+  //     }
+  //   }
+  //   catch(err) {
+  //     this.exitLeft = false;
+  //   }
+
+  //   //exit top
+  //   try {
+  //     if (currentLevel.level[gridOfLevel[0]-1][gridOfLevel[1]].canEnter) {
+  //       this.exitTop = true;
+  //     }
+  //   }
+  //   catch(err) {
+  //     this.exitTop = false;
+  //   }
+
+  //   //exit bottom
+  //   try {
+  //     if (currentLevel.level[gridOfLevel[0]+1][gridOfLevel[1]].canEnter) {
+  //       this.exitTop = true;
+  //     }
+  //   }
+  //   catch(err) {
+  //     this.exitTop = false;
+  //   }
+  // }
 }
 
 class Button {
