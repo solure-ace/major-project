@@ -30,6 +30,9 @@ let points = 0;
 
 let money = 0;
 
+//enemies
+let enemies = [];
+
 //BUTTONS
 let instructionButton;
 let startButton;
@@ -43,6 +46,8 @@ let gridOfLevel = [0, 0];
 
 //LEVELS
 let currentLevel;
+
+tutorialOver = false;
 let tutorialLevel;
 let homeLevel;
 
@@ -82,7 +87,7 @@ let instructions = {
 function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 
-  cyanTurf = loadImage("cyanturf.png")
+  cyanTurf = loadImage("cyanturf.png");
 }
 
 
@@ -96,7 +101,7 @@ function setup() {
 
   // LEVELS
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
-  homeLevel =  new Level([4]);
+  homeLevel =  new Level([[4]]);
   //changing this to 'aLevel' breaks it idk why eslint wants me to do that
   tutorialLevel.level = tutorialLevel.generateLevel();
   homeLevel.level = homeLevel.generateLevel();
@@ -127,6 +132,9 @@ class Player {
     this.lastHit = 0;
     this.hitWait = 1000;
 
+    this.lastAttacked = 0;
+    this.attackWait =  1500;
+
     this.state = "alive";
     this.lives = 3;
 
@@ -140,7 +148,7 @@ class Player {
 
   }
 
-  displayEffects() {
+  displayAttacks() {
     //MELEE ATTACK
     if (this.meleeAttackAnim === "start") {
       fill(255, 255, 255, 50);
@@ -153,7 +161,7 @@ class Player {
     fill(168, 132, 207);
     rect(this.x, this.y, this.width, this.height, 50);
 
-    this.displayEffects();
+    this.displayAttacks();
   }
 
   displayHealthBar() {
@@ -282,27 +290,27 @@ class Player {
   checkState() {
     if (this.currentHP <= 0) {
       this.state = "dead";
+      returnButton.display();
     }
   }
 
   attack() {
-    if (dist(mouseX, mouseY, this.x, this.y) < 150) {
+    if (dist(mouseX, mouseY, this.x, this.y) < 150){ //&& (millis() > this.lastAttacked + this.attackWait || this.lastAttacked <= 0)) {
       this.meleeAttack();
     }
+    else {
+      this.rangedAttack();
+    }
+    // else if (millis() < this.lastAttacked + this.attackWait) {
+    //   this.meleeAttackAnim = "end";
+    // }
   }
 
   meleeAttack() {
-    // constrain function my beloved
-    this.meleeAttackAnim = "start";
     fill(255, 255, 255, 50);
     circle(mouseX, mouseY, 100);
 
-    //circle(constrain(mouseX, this.x-100, this.x+100), constrain(mouseY, this.y-100, this.y+100), 100, 100);
-    //where ever you click with left mouse a circle (hitbox marker (temporary)) appears, anything touching the circle will take dmg
-
-    //OR
-
-    //when mouse clicked check the dist and if its within .... .... then call this funtion.... makes more sense i think
+    //for enemy of enemyArray if collide enemy take damage 
   }
 
   rangedAttack() {
@@ -311,76 +319,75 @@ class Player {
 
   moveBetweenGrids() {
 
-  this.checkExits();
+    this.checkExits();
     
-  let theGridX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX;
-  let theGridY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY;
-  let theGridH = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight;
-  let theGridW = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth;
+    let theGridX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX;
+    let theGridY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY;
+    let theGridH = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight;
+    let theGridW = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth;
 
-  //LEFT AND RIGHT EXITS
-  //is y in middle
-  if (this.y  > height/2 - CELL_SIZE/2 &&   this.y < height/2 + CELL_SIZE/2-this.height) {
-    if (this.exitLeft && this.exitRight) {
-      this.x = constrain(this.x, //# being constrained
-        this.width*-1, //min
-        width+this.width); //max
-    }
-    else if (!this.exitLeft && !this.exitRight) {
-      this.x = constrain(this.x, //# being constrained
-        theGridX + CELL_SIZE, //min
-        theGridX + theGridW - CELL_SIZE-this.width); //max
-    }
-    else if (this.exitRight) {
-      this.x = constrain(this.x, //# being constrained
-        theGridX + CELL_SIZE, //min
-        width+this.width); //max
-    }
-    else if (this.exitLeft) {
-      this.x = constrain(this.x, //# being constrained
-        this.width*-1, //min
-        theGridX + theGridW - CELL_SIZE-this.width); //max
-    }
-
-  }
-  else { 
-    this.x = constrain(this.x, //# being constrained
-      theGridX + CELL_SIZE, //min
-      theGridX + theGridW - CELL_SIZE-this.width); //max
-      
-  }
-
-
-  //TOP AND BOTTOM
-  //is x in middle
-  //width/2 - CELL_SIZE/2, 0, width/2 + CELL_SIZE/2, height
-  if (this.x  > width/2 - CELL_SIZE/2 &&   this.x < width/2 + CELL_SIZE/2 - this.width) {
-    if (this.exitTop && this.exitBottom) {
-      this.y = constrain(this.y, //# being constrained
-        this.height*-1, //min
-        height+this.height); //max
-    }
-    else if (!this.exitTop && !this.exitBottom) {
-      this.y = constrain(this.y, //# being constrained
-        theGridY + CELL_SIZE, //min
-        theGridY + theGridH - CELL_SIZE-this.height); //max
+    //LEFT AND RIGHT EXITS
+    //is y in middle
+    if (this.y  > height/2 - CELL_SIZE/2 &&   this.y < height/2 + CELL_SIZE/2-this.height) {
+      if (this.exitLeft && this.exitRight) {
+        this.x = constrain(this.x, 
+          this.width*-1, //min
+          width+this.width); //max
       }
-    else if (this.exitBottom) {
-      this.y = constrain(this.y, //# being constrained
+      else if (!this.exitLeft && !this.exitRight) {
+        this.x = constrain(this.x, 
+          theGridX + CELL_SIZE, //min
+          theGridX + theGridW - CELL_SIZE-this.width); //max
+      }
+      else if (this.exitRight) {
+        this.x = constrain(this.x, 
+          theGridX + CELL_SIZE, //min
+          width+this.width); //max
+      }
+      else if (this.exitLeft) {
+        this.x = constrain(this.x, 
+          this.width*-1, //min
+          theGridX + theGridW - CELL_SIZE-this.width); //max
+      }
+
+    }
+    else { 
+      this.x = constrain(this.x, 
+        theGridX + CELL_SIZE, //min
+        theGridX + theGridW - CELL_SIZE-this.width); //max
+      
+    }
+
+
+    //TOP AND BOTTOM
+    //is x in middle
+    if (this.x  > width/2 - CELL_SIZE/2 &&   this.x < width/2 + CELL_SIZE/2 - this.width) {
+      if (this.exitTop && this.exitBottom) {
+        this.y = constrain(this.y, 
+          this.height*-1, //min
+          height+this.height); //max
+      }
+      else if (!this.exitTop && !this.exitBottom) {
+        this.y = constrain(this.y,
+          theGridY + CELL_SIZE, //min
+          theGridY + theGridH - CELL_SIZE-this.height); //max
+      }
+      else if (this.exitBottom) {
+        this.y = constrain(this.y, 
+          theGridY + CELL_SIZE, //min
+          height+this.height); //max
+      }
+      else if (this.exitTop) {
+        this.y = constrain(this.y, 
+          this.height*-1, //min
+          theGridY + theGridH - CELL_SIZE-this.height); //max
+      }
+    }
+    else { 
+      this.y = constrain(this.y,
         theGridY + CELL_SIZE, //min
-        height+this.height); //max
+        theGridY + theGridH - CELL_SIZE-this.height); //max  
     }
-    else if (this.exitTop) {
-      this.y = constrain(this.y, //# being constrained
-        this.height*-1, //min
-        theGridY + theGridH - CELL_SIZE-this.height); //max
-    }
-  }
-  else { 
-    this.y = constrain(this.y, //# being constrained
-      theGridY + CELL_SIZE, //min
-      theGridY + theGridH - CELL_SIZE-this.height); //max  
-  }
 
 
     //updates coords when you move
@@ -496,7 +503,9 @@ class SingleGrid {
     this.gridY =  height/2 - (this.gridHeight/2-CELL_SIZE/2) - CELL_SIZE/2;
 
     this.canEnter = true;
-
+    this.goalCompleted = false;
+    this.goalCounted = false;
+    
     this.generateGrid();
   }
 
@@ -516,6 +525,23 @@ class SingleGrid {
 
       }
     }
+  }
+
+  displayGoal() {
+    fill(200);
+    if (collideRectCircle(you.x, you.y, you.width, you.height, width/2, height/2, 100)) {
+      this.goalCompleted = true;
+      if (!this.goalCounted) {
+        currentLevel.completedGoals += 1;
+        this.goalCounted = true;
+      }
+    }
+    if (this.goalCompleted) {
+      fill("green");
+    }
+    
+    circle(width/2, height/2, 100);
+
   }
 
   displayGridExits(right, left, top, bottom) {
@@ -539,7 +565,7 @@ class SingleGrid {
         
         if (this.grid[y][x] === 0) {
           // fill(36, 115, 113);
-          image(cyanTurf, x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE + height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE)
+          image(cyanTurf, x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE + height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
         }
         if (this.grid[y][x] === 1) {
           fill(0);
@@ -549,31 +575,21 @@ class SingleGrid {
         }
       }
     }
-    this.displayGridExits(you.exitRight, you.exitLeft, you.exitTop, you.exitBottom)
+    this.displayGridExits(you.exitRight, you.exitLeft, you.exitTop, you.exitBottom);
 
     if (currentLevel.template[gridOfLevel[0]][gridOfLevel[1]] === "g") {
-      fill("green");
-      rect(0,0,100,100);
+      this.displayGoal();
     }
   }
 }
-
-// class Goal { /// yeahhh????
-//   constructor() {
-//     this.completed = false;
-//   }
-
-//   displayGoal() {
-
-//   }
-// }
 
 class Level  {
   constructor(template) {
     //temporary
     this.template = template;
 
-    this.goals = 
+    this.completedGoals = 0;
+    this.totalGoals = 0;
 
 
     //i dont think this V works right now                
@@ -593,12 +609,13 @@ class Level  {
       for (let x = 0; x < this.template[y].length; x++) {
         //console.log(this.template[y][x]);
         if (this.template[y][x] === "g") {
+          this.totalGoals +=1;
           let aGrid = new SingleGrid(5, 5);
           this.aLevel[y].push(aGrid);
         }
         else {  
-        let aGrid = new SingleGrid(this.template[y][x]+4, this.template[y][x]+4);
-        this.aLevel[y].push(aGrid);
+          let aGrid = new SingleGrid(this.template[y][x]+4, this.template[y][x]+4);
+          this.aLevel[y].push(aGrid);
         }
         
       }
@@ -611,6 +628,7 @@ class Level  {
 
 
 function draw() {
+  changeLevel();
   if (gameState === "start") {
     displayStartScreen();
     
@@ -618,9 +636,9 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-    if (levelArea === "onLevel") {
-      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid();
-    }
+    
+    currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid();
+    
 
     // damageSquare();
     // healSquare();
@@ -629,11 +647,22 @@ function draw() {
     you.display();
 
     displayOngoingUI();
+
+    
+  }
+}
+
+function changeLevel() {
+  if (tutorialLevel.completedGoals === tutorialLevel.totalGoals && !tutorialLevel){
+    tutorialOver = true;
+    returnButton.display();
   }
 }
 
 
-
+function enemy() {
+  
+}
 
 function displayStartScreen() {
   //background(47, 87, 99); //teal
@@ -697,10 +726,19 @@ function displayOngoingUI() {
   if (sideMenu.state === "open") {
     //display setting/menu buttons
     toggleSoundButton.display();
+    
+  }
+
+  if (currentLevel.completedGoals === currentLevel.totalGoals && currentLevel.totalGoals !== 0){
+    returnButton.display();
   }
 
   //TEMPORARY
-  text(`${gridOfLevel[0]}, ${gridOfLevel[1]}`, 200, 200);
+  if (currentLevel !== homeLevel) {
+    textSize(12);
+    text(`${gridOfLevel[0]}, ${gridOfLevel[1]}`, 200, 200);
+    text(`${currentLevel.completedGoals}/${currentLevel.totalGoals} goals completed`, 200, 230);
+  }
 }
 
 
@@ -852,7 +890,7 @@ function createButtons() {
 
   startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35, "notToggle");
 
-
+  returnButton = new Button(width/2, height-175, 200, 50,          27, 5, 43,   "return to base" , 25, "notToggle");
 
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
   //sound volume (amp) adjuster button when
@@ -896,8 +934,16 @@ function mousePressed() {
   }
 
   if (gameState === "ongoing") {
+
+    if (returnButton.isClicked() && currentLevel.completedGoals === currentLevel.totalGoals && currentLevel.totalGoals !== 0) {
+      currentLevel = homeLevel;
+      gridOfLevel[0] = 0;
+      gridOfLevel[1] = 0;
+    }
+    else {
     //if (mouseX < you.x-100 && mouseX > you.x + 100)
-    you.attack();
+      you.attack();
+    }
   }
 }
   
