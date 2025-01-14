@@ -32,6 +32,7 @@ let money = 0;
 
 //enemies
 let enemies = [];
+let someEnemy;
 
 //BUTTONS
 let instructionButton;
@@ -93,7 +94,7 @@ function preload() {
 
   cyanTurf = loadImage("cyanturf.png");
   greyTile = loadImage("greyTile.png");
-  homeBed = loadImage("bed.png")
+  homeBed = loadImage("bed.png");
 }
 
 
@@ -101,6 +102,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   you = new Player(width/2, height/2);
+  
 
   // LEVELS
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
@@ -110,7 +112,7 @@ function setup() {
   homeLevel.level = homeLevel.generateLevel();
 
   currentLevel = tutorialLevel;
-
+  someEnemy = new Enemy();
   // BUTTONS
   createButtons();
 }
@@ -152,20 +154,10 @@ class Player {
 
   }
 
-  displayAttacks() {
-    //MELEE ATTACK
-    if (this.meleeAttackAnim === "start") {
-      fill(255, 255, 255, 50);
-      circle(mouseX, mouseY, 100);
-    }
-  }
-
   display() {
     noStroke();
     fill(168, 132, 207);
     rect(this.x, this.y, this.width, this.height, 50);
-
-    this.displayAttacks();
   }
 
   displayHealthBar() {
@@ -418,6 +410,34 @@ class Player {
 
 }
 
+class Enemy {
+  constructor() {
+    this.x = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth);  
+    this.y = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight);
+    this.r = 30;
+
+    this.currentHP = 50;
+    this.maxHP = 100;
+  }
+
+  display() {
+    fill("red");
+    circle(this.x, this.y, this.r*2);
+    
+    this.displayHealth();
+    if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2)) {
+      // this.displayHealthBar();
+      console.log("colliding");
+    }
+  }
+
+  displayHealth() {
+    text(`${this.currentHP}/${this.maxHP}`, this.x, this.y + this.r*2);
+  }
+}
+
+
+
 class Button {
   constructor(x, y, w, h, r, g, b, theText, tSize, toggle) {
     this.w = w;
@@ -622,8 +642,9 @@ class Level  {
   }
 }
 
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Draw Loop Start
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function draw() {
   changeLevel();
@@ -635,8 +656,12 @@ function draw() {
     background(0);
 
     if (currentLevel === homeLevel) {
-      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
+      homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
       displayHomeStuff();
+    }
+    else if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
+      tutorialLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
+      someEnemy.display();
     }
     else {
       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
@@ -651,21 +676,34 @@ function draw() {
 
     displayOngoingUI();
 
-    if (!tutorialOver){
-      if (currentLevel === tutorialLevel && gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
-      //very first grid the player is loaded onto
-      textSize(15);
-      textAlign(CENTER);
+    
 
-      if (tutorialPart === 1) {
-        text("Use the WASD keys to move", width/2, 100);
-      }
-      else if (tutorialPart === 2)
-        text("exit the grid (down or right) to continue", width/2, 100);
-      }
+    if (!tutorialOver){
+      tutorial();
     }
   }
 }
+
+function tutorial() {
+  if (currentLevel === tutorialLevel) {
+    textSize(15);
+    textAlign(CENTER);
+
+    if (tutorialPart === 1) {
+      text("Use the WASD keys to move", width/2, 100);
+    }
+    else if (tutorialPart === 2) {
+      text("exit the grid (down or right) to continue", width/2, 100);
+      if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
+        tutorialPart = 3; 
+      }
+    }
+    else if (tutorialPart === 3){
+      
+    }
+  }
+}
+
 
 function displayHomeStuff() {
   let bedX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2;
@@ -677,8 +715,8 @@ function displayHomeStuff() {
     image(homeBed, bedX, bedY, bedW, bedH);
 
     if (collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
-        restButton.display();
-      }
+      restButton.display();
+    }
   }
 }
 
@@ -972,7 +1010,7 @@ function mousePressed() {
     }
     else if (restButton.isClicked()) {
       //blink screen
-      you.currentHP = you.maxHP
+      you.currentHP = you.maxHP;
     }
     else {
     //if (mouseX < you.x-100 && mouseX > you.x + 100)
