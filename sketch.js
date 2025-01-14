@@ -37,6 +37,9 @@ let enemies = [];
 let instructionButton;
 let startButton;
 let menuButton;
+let returnButton;
+let restButton;
+let toggleSoundButton;
 
 //GRIDS
 const CELL_SIZE = 100;
@@ -47,7 +50,8 @@ let gridOfLevel = [0, 0];
 //LEVELS
 let currentLevel;
 
-tutorialOver = false;
+let tutorialOver = false;
+let tutorialPart = 1;
 let tutorialLevel;
 let homeLevel;
 
@@ -88,6 +92,8 @@ function preload() {
   buttonClickedSound = loadSound("zipclick.flac");
 
   cyanTurf = loadImage("cyanturf.png");
+  greyTile = loadImage("greyTile.png");
+  homeBed = loadImage("bed.png")
 }
 
 
@@ -96,18 +102,17 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   you = new Player(width/2, height/2);
 
-  // BUTTONS
-  createButtons();
-
   // LEVELS
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
-  homeLevel =  new Level([[4]]);
+  homeLevel =  new Level([[3, 1]]);
   //changing this to 'aLevel' breaks it idk why eslint wants me to do that
   tutorialLevel.level = tutorialLevel.generateLevel();
   homeLevel.level = homeLevel.generateLevel();
 
   currentLevel = tutorialLevel;
-  //testingLevel.generateEachGrid();
+
+  // BUTTONS
+  createButtons();
 }
 
 
@@ -127,7 +132,7 @@ class Player {
     this.speed = 10;
 
     this.maxHP = 100;
-    this.currentHP = 100;
+    this.currentHP = 50;
 
     this.lastHit = 0;
     this.hitWait = 1000;
@@ -136,7 +141,6 @@ class Player {
     this.attackWait =  1500;
 
     this.state = "alive";
-    this.lives = 3;
 
     this.meleeDMG = 10;
     this.rangedDMG = 7;
@@ -544,38 +548,38 @@ class SingleGrid {
 
   }
 
-  displayGridExits(right, left, top, bottom) {
+  displayGridExits(right, left, top, bottom, tile) {
     if (right) {
-      image(cyanTurf, this.gridX + this.gridWidth - CELL_SIZE, height/2 - CELL_SIZE/2, CELL_SIZE, CELL_SIZE); 
+      image(tile, this.gridX + this.gridWidth - CELL_SIZE, height/2 - CELL_SIZE/2, CELL_SIZE, CELL_SIZE); 
     }
     if (left) {
-      image(cyanTurf, this.gridX, height/2 - CELL_SIZE/2, CELL_SIZE, CELL_SIZE);
+      image(tile, this.gridX, height/2 - CELL_SIZE/2, CELL_SIZE, CELL_SIZE);
     }
     if (top) {
-      image(cyanTurf, width/2 - CELL_SIZE/2, this.gridY, CELL_SIZE, CELL_SIZE);
+      image(tile, width/2 - CELL_SIZE/2, this.gridY, CELL_SIZE, CELL_SIZE);
     }
     if (bottom) {
-      image(cyanTurf, width/2 - CELL_SIZE/2, this.gridY + this.gridHeight - CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      image(tile, width/2 - CELL_SIZE/2, this.gridY + this.gridHeight - CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
   }
 
-  displayGrid() {
+  displayGrid(tile) {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
         
         if (this.grid[y][x] === 0) {
           // fill(36, 115, 113);
-          image(cyanTurf, x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE + height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
+          image(tile, x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE + height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
+ 
         }
         if (this.grid[y][x] === 1) {
           fill(0);
           noStroke();
-          //stroke(45);
           rect(x*CELL_SIZE + width/2 - this.gridWidth/2, y*CELL_SIZE+ height/2 - this.gridHeight/2, CELL_SIZE, CELL_SIZE);
         }
       }
     }
-    this.displayGridExits(you.exitRight, you.exitLeft, you.exitTop, you.exitBottom);
+    this.displayGridExits(you.exitRight, you.exitLeft, you.exitTop, you.exitBottom, tile);
 
     if (currentLevel.template[gridOfLevel[0]][gridOfLevel[1]] === "g") {
       this.displayGoal();
@@ -591,12 +595,6 @@ class Level  {
     this.completedGoals = 0;
     this.totalGoals = 0;
 
-
-    //i dont think this V works right now                
-    this.currentGrid;
-
-    //choses the first grid with this.template[y][x] > 0
-    this.chosenStartingGrid = false;                 
   }
 
   generateLevel() {
@@ -636,8 +634,13 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
 
-    
-    currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid();
+    if (currentLevel === homeLevel) {
+      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
+      displayHomeStuff();
+    }
+    else {
+      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
+    }
     
 
     // damageSquare();
@@ -648,13 +651,40 @@ function draw() {
 
     displayOngoingUI();
 
-    
+    if (!tutorialOver){
+      if (currentLevel === tutorialLevel && gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
+      //very first grid the player is loaded onto
+      textSize(15);
+      textAlign(CENTER);
+
+      if (tutorialPart === 1) {
+        text("Use the WASD keys to move", width/2, 100);
+      }
+      else if (tutorialPart === 2)
+        text("exit the grid (down or right) to continue", width/2, 100);
+      }
+    }
+  }
+}
+
+function displayHomeStuff() {
+  let bedX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2;
+  let bedY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE;
+  let bedW = 86;
+  let bedH = 163;
+
+  if (gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
+    image(homeBed, bedX, bedY, bedW, bedH);
+
+    if (collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
+        restButton.display();
+      }
   }
 }
 
 function changeLevel() {
-  if (tutorialLevel.completedGoals === tutorialLevel.totalGoals && !tutorialLevel){
-    tutorialOver = true;
+  if (currentLevel.completedGoals === currentLevel.totalGoals && !tutorialLevel){
+    // tutorialOver = true;
     returnButton.display();
   }
 }
@@ -700,11 +730,6 @@ function displayStartScreen() {
   displayInstructions();
 
   animateSideMenu();
-
-  // if (sideMenu.state === "open") {
-  //   //display setting/menu buttons
-  //   toggleSoundButton.display();
-  // }
 }
 
 
@@ -750,7 +775,7 @@ function animateSideMenu() {
     if (sideMenu.x <= 0) {
       
       //
-      if (dist(sideMenu.x, 0, 0, 0) < 70) { //change it to be based on percentages of sideMenu's width
+      if (dist(sideMenu.x, 0, 0, 0) < 70) { 
         sideMenu.dx = 12;
       }
       else if (dist(sideMenu.x, 0, 0, 0) < 40) { 
@@ -890,8 +915,13 @@ function createButtons() {
 
   startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35, "notToggle");
 
-  returnButton = new Button(width/2, height-175, 200, 50,          27, 5, 43,   "return to base" , 25, "notToggle");
 
+  returnButton = new Button(width/2, height-175, 200, 50,          27, 5, 43,   `Level Complete \n {{ return to base }}` , 15, "notToggle");
+  //when level is completed pressing this button brings you to homeLevel
+
+  restButton = new Button(homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2 + 43, homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE + 180,
+    80, 20,        27, 5, 43,      "rest?",  15, "notToggle");
+    
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
   //sound volume (amp) adjuster button when
 }
@@ -940,6 +970,10 @@ function mousePressed() {
       gridOfLevel[0] = 0;
       gridOfLevel[1] = 0;
     }
+    else if (restButton.isClicked()) {
+      //blink screen
+      you.currentHP = you.maxHP
+    }
     else {
     //if (mouseX < you.x-100 && mouseX > you.x + 100)
       you.attack();
@@ -951,7 +985,10 @@ function mousePressed() {
 
 
 function keyPressed() {
-  // put this in keypressed
+  if (tutorialPart === 1 && (keyIsDown(87) || keyIsDown(83) || keyIsDown(68) || keyIsDown(65))) {
+    tutorialPart = 2;
+  }
+  
   if (keyCode === 32) {
     if (sideMenu.state === "open") {
       sideMenu.state = "closing";
