@@ -31,8 +31,9 @@ let points = 0;
 let money = 0;
 
 //enemies
-let enemies = [];
-let someEnemy;
+let amountOfEnemies = 1;
+let enemyArray = [];
+let tutorialEnemy;
 
 //BUTTONS
 let instructionButton;
@@ -112,7 +113,8 @@ function setup() {
   homeLevel.level = homeLevel.generateLevel();
 
   currentLevel = tutorialLevel;
-  someEnemy = new Enemy();
+  tutorialEnemy = new Enemy();
+  enemyArray.push(tutorialEnemy);
   // BUTTONS
   createButtons();
 }
@@ -144,8 +146,7 @@ class Player {
 
     this.state = "alive";
 
-    this.meleeDMG = 10;
-    this.rangedDMG = 7;
+    this.DMG = 10;
 
     this.exitLeft = false;
     this.exitRight = false;
@@ -418,14 +419,20 @@ class Enemy {
 
     this.currentHP = 50;
     this.maxHP = 100;
+
+    this.DMG = 10;
   }
 
   display() {
-    fill("red");
-    circle(this.x, this.y, this.r*2);
-    
-    if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2) || dist(this.x, this.y, you.x, you.y) < 150) {
-      this.displayHealth();
+    if (this.currentHP > 0) {
+      fill("red");
+      circle(this.x, this.y, this.r*2);
+      
+      if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2) || dist(this.x, this.y, you.x, you.y) < 150) {
+        this.displayHealth();
+      }
+
+      this.damagePlayer();
     }
   }
 
@@ -433,6 +440,13 @@ class Enemy {
     fill(255);
     textSize(10);
     text(`${this.currentHP}/${this.maxHP}HP`, this.x, this.y + this.r*2);
+  }
+
+  damagePlayer(){
+    //melee
+    if (collideRectCircle(you.x, you.y, you.width, you.height, this.x, this.y, this.r*2) ) {
+      you.currentHP - this.DMG;
+    }
   }
 }
 
@@ -663,6 +677,11 @@ function draw() {
   }
   else if (gameState === "ongoing") {
     background(0);
+    removeDeadEnemies();
+
+    for (let enemy of enemyArray) {
+      console.log(enemy.currentHP);
+    }
 
     if (currentLevel === homeLevel) {
       homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
@@ -670,7 +689,7 @@ function draw() {
     }
     else if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
       tutorialLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
-      someEnemy.display();
+      tutorialEnemy.display();
     }
     else {
       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
@@ -709,8 +728,8 @@ function tutorial() {
     }
     else if (tutorialPart === 3){
       //keep player in grid untill enemy is defeated
-      you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE);
-      you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE);
+      //you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE);
+      //you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE);
       
       //dist based text far mouse close other ykykyk
       text("Hover with your mouse to see an enemy's HP", width/2, 100);
@@ -879,7 +898,13 @@ function displaySideMenu() {
   noStroke();
 }
 
-
+function removeDeadEnemies() {
+  for (let enemy of enemyArray) {
+    if (enemy.currentHP <= 0) {
+      enemyArray.splice(enemyArray.indexOf(enemy), 1);
+    }
+  }
+}
 
 function displayInstructions() {
   if (instructions.state === "opening") {
@@ -932,6 +957,13 @@ function damageSquare() {
     you.currentHP = constrain(you.currentHP, 0, you.maxHP);
     you.lastHit = millis();
     //console.log(millis() > you.lastHit + you.hitWait);
+  }
+}
+
+function spawnEnemy(amountOfEnemies){
+  for (let i = amountOfEnemies; i > 0; i++) {
+    let someEnemy = new Enemy();
+    enemyArray.push(someEnemy);
   }
 }
 
@@ -1023,8 +1055,13 @@ function mousePressed() {
       you.currentHP = you.maxHP;
     }
     else {
-    //if (mouseX < you.x-100 && mouseX > you.x + 100)
-      you.attack();
+      //if (mouseX < you.x-100 && mouseX > you.x + 100)
+      //you.attack();
+      for (let enemy of enemyArray) {
+        if (collidePointCircle(mouseX, mouseY, enemy.x, enemy.y, enemy.r*2)) {
+          enemy.currentHP -= you.DMG;
+        }
+      }
     }
   }
 }
