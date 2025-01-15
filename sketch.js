@@ -424,16 +424,25 @@ class Enemy {
     fill("red");
     circle(this.x, this.y, this.r*2);
     
-    this.displayHealth();
-    if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2)) {
-      // this.displayHealthBar();
-      console.log("colliding");
+    if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2) || dist(this.x, this.y, you.x, you.y) < 150) {
+      this.displayHealth();
     }
   }
 
   displayHealth() {
-    text(`${this.currentHP}/${this.maxHP}`, this.x, this.y + this.r*2);
+    fill(255);
+    textSize(10);
+    text(`${this.currentHP}/${this.maxHP}HP`, this.x, this.y + this.r*2);
   }
+}
+
+class Bullet {
+  constructor(){
+    this.x;
+    this.y;
+    this.direction; //playerx&y/mouseX&Y from when clicked? as an angle erm math
+  }
+  //particle
 }
 
 
@@ -699,7 +708,12 @@ function tutorial() {
       }
     }
     else if (tutorialPart === 3){
+      //keep player in grid untill enemy is defeated
+      you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE);
+      you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE);
       
+      //dist based text far mouse close other ykykyk
+      text("Hover with your mouse to see an enemy's HP", width/2, 100);
     }
   }
 }
@@ -727,10 +741,6 @@ function changeLevel() {
   }
 }
 
-
-function enemy() {
-  
-}
 
 function displayStartScreen() {
   //background(47, 87, 99); //teal
