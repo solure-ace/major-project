@@ -26,8 +26,7 @@ let you;
 let levelsCompleted = 0;
 let enemysDefeated = 0;
 let points = 0;
-
-let money = 0;
+let BonusPointsRecieved = false;
 
 //enemies
 let amountOfEnemies = 1;
@@ -42,10 +41,13 @@ let returnButton;
 let restButton;
 let toggleSoundButton;
 
-let showDebug
+let showDebug;
 let toggleDebugButton;
 
 let toggleBGMButton;
+
+let sillyButton;
+let isYouSilly = false;
 
 //GRIDS
 const CELL_SIZE = 100;
@@ -189,6 +191,12 @@ class Player {
       }
       
       rect(greyX+6, greyY+6, this.currentHP/this.maxHP*120, 24);
+      if (collidePointRect(mouseX, mouseY, greyX, greyY, greyBarWidth, 36)) {
+        fill(255);
+        textAlign(LEFT);
+        textSize(12);
+        text(`${round(you.currentHP)}/${round(you.maxHP)}`, greyX + 10, greyY + 18);
+      }
     }
   }
   
@@ -199,7 +207,6 @@ class Player {
       // ^
       if (keyIsDown(87) && !keyIsDown(83) && !keyIsDown(68) && !keyIsDown(65)) {
         this.y -= this.speed;
-        //this.y = constrain(this.y - this.speed, currentLevel.level[0][0].gridY, currentLevel.level[0][0].gridY + currentLevel.level[0][0].gridHeight);
       }
       // v
       else if (keyIsDown(83) && !keyIsDown(87) && !keyIsDown(68) && !keyIsDown(65)) {
@@ -389,6 +396,10 @@ class Player {
         theGridY + theGridH - CELL_SIZE-this.height); //max  
     }
 
+    // let theGridX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX;
+    // let theGridY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY;
+    // let theGridH = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight;
+    // let theGridW = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth;
 
     //updates coords when you move
     //right
@@ -416,8 +427,8 @@ class Player {
 
 class Enemy {
   constructor() {
-    this.x = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth);  
-    this.y = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight);
+    this.x = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE);  
+    this.y = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE);
     this.r = 30;
 
     this.currentHP = 50;
@@ -447,8 +458,11 @@ class Enemy {
 
   damagePlayer(){
     //melee
-    if (collideRectCircle(you.x, you.y, you.width, you.height, this.x, this.y, this.r*2) ) {
-      you.currentHP - this.DMG;
+    if (collideRectCircle(you.x, you.y, you.width, you.height, this.x, this.y, this.r*2) && (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)) {
+      you.currentHP -= this.DMG;
+      you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+      you.lastHit = millis();
+
     }
 
     // if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
@@ -562,6 +576,8 @@ class SingleGrid {
     this.canEnter = true;
     this.goalCompleted = false;
     this.goalCounted = false;
+
+    this.amountOfEnemies = random(0, this.rows-1);
     
     this.generateGrid();
   }
@@ -680,12 +696,12 @@ class Level  {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function draw() {
-  changeLevel();
   if (gameState === "start") {
     displayStartScreen();
     
   }
   else if (gameState === "ongoing") {
+    changeLevel();
     background(0);
     removeDeadEnemies();
     
@@ -717,20 +733,24 @@ function draw() {
 }
 
 function tutorial() {
-  
-    textSize(15);
-    textAlign(CENTER);
+  textSize(15);
+  textAlign(CENTER);
 
-    if (tutorialPart === 1) {
-      fill(120);
-    }
-    else {
-      fill(80);
-    }
+  if (you.currentHP < 50) {
+    text("You'll take damage when touching enemies", width/2, 130);
+    you.currentHP += 0.1;
+  }
 
-    text("press 'x' to skip tutorial", width-150, 30);
+  if (tutorialPart === 1) {
+    fill(120);
+  }
+  else {
+    fill(80);
+  }
 
-    fill(255);
+  text("press 'x' to skip tutorial", width-150, 30);
+
+  fill(255);
 
   if (tutorialPart === 1) {
     text("Use the WASD keys to move", width/2, 100);
@@ -751,9 +771,10 @@ function tutorial() {
     }
   }
   else if (tutorialPart === 4) {
-    text("Use left click to attack", width/2, 100);
+    text("Use left click to attack and defeat the enemy to move on", width/2, 100);
     if (tutorialEnemy.currentHP <= 0) {
       tutorialPart = 5;
+      points += 50;
     }
   }
   else if (tutorialPart === 5) {
@@ -764,8 +785,16 @@ function tutorial() {
   }
   else if (tutorialPart === 6) {
     text("Click to return to base", width/2, 100);
+
     if (currentLevel === homeLevel) {
       tutorialPart = 7;
+    }
+    else if (gridOfLevel[0] === 0 && gridOfLevel[1] === 2){
+      text("wowee a secret (+100pts)", width/2, 130);
+      if (!BonusPointsRecieved) {
+        points += 100;
+        BonusPointsRecieved = true;
+      }
     }
   }
   else if(tutorialPart === 7) {
@@ -867,6 +896,11 @@ function displayOngoingUI() {
 
   you.displayHealthBar();
   
+
+  fill(255);
+  textAlign(LEFT);
+  textSize(12);
+  text(`Points: ${points}`, 30, 100);
 
   menuButton.display();
 
@@ -1064,6 +1098,7 @@ function createButtons() {
 
   restButton = new Button(homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2 + 43, homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE + 180,
     80, 20,        27, 5, 43,      "rest?",  15, "notToggle");
+  
     
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
 
@@ -1076,6 +1111,7 @@ function createButtons() {
 
 function mousePressed() {
 
+  //menu states
   if (menuButton.isClicked()) {
     if (sideMenu.state === "closed") {
       sideMenu.state = "opening";
@@ -1148,6 +1184,8 @@ function mousePressed() {
 
 
 function keyPressed() {
+
+  //tutorial
   if (tutorialPart === 1 && (keyIsDown(87) || keyIsDown(83) || keyIsDown(68) || keyIsDown(65))) {
     tutorialPart = 2;
   }
@@ -1156,6 +1194,8 @@ function keyPressed() {
     tutorialOver = true;
   }
   
+
+  //menus
   if (keyCode === 32) {
     if (sideMenu.state === "open") {
       sideMenu.state = "closing";
