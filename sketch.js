@@ -1,8 +1,8 @@
 // Major Project
 // Avery Walker
-// January 8th 2025
+// January 15th 2025
 //
-// Extra for Experts:
+//
 //(currentLevel['aLevel'])[0][0].rows <- figured out how to access stuff from my 3d array. cool
 // constrain();
 
@@ -18,7 +18,6 @@
 //gameStates
 let gameState = "start";
 let levelArea = "onLevel";
-let floorType = "outside";
 
 //player
 let you;
@@ -42,6 +41,11 @@ let menuButton;
 let returnButton;
 let restButton;
 let toggleSoundButton;
+
+let showDebug
+let toggleDebugButton;
+
+let toggleBGMButton;
 
 //GRIDS
 const CELL_SIZE = 100;
@@ -81,10 +85,7 @@ let sideMenu = {
 //instructions
 let instructions = {
   width: 750,
-  height: 650,
-  movement: "WASD",
-  attack: "...",
-  goal: "...",
+  height: 600,
   state: "closed",
 };
 
@@ -108,6 +109,7 @@ function setup() {
   // LEVELS
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
   homeLevel =  new Level([[3, 1]]);
+
   //changing this to 'aLevel' breaks it idk why eslint wants me to do that
   tutorialLevel.level = tutorialLevel.generateLevel();
   homeLevel.level = homeLevel.generateLevel();
@@ -115,6 +117,7 @@ function setup() {
   currentLevel = tutorialLevel;
   tutorialEnemy = new Enemy();
   enemyArray.push(tutorialEnemy);
+
   // BUTTONS
   createButtons();
 }
@@ -447,6 +450,13 @@ class Enemy {
     if (collideRectCircle(you.x, you.y, you.width, you.height, this.x, this.y, this.r*2) ) {
       you.currentHP - this.DMG;
     }
+
+    // if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
+    //   you.currentHP -= 10;
+    //   you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+    //   you.lastHit = millis();
+    //   //console.log(millis() > you.lastHit + you.hitWait);
+    // }
   }
 }
 
@@ -642,7 +652,7 @@ class Level  {
 
   generateLevel() {
     //takes each value from the template and turns it into a grid
-    //key: 1=3x3, 2=4x4, 3=5x5 ect, g=5x5 "goal" grid, r = random(3, 9)x random(3, 8)
+    //key: 1=3x3, 2=4x4, 3=5x5 ect, g=3x3 "goal" grid, // (r not yet set) r = random(3, 9)x random(3, 8)
 
     this.aLevel = [];
     for (let y = 0; y < this.template.length; y ++) {
@@ -678,10 +688,7 @@ function draw() {
   else if (gameState === "ongoing") {
     background(0);
     removeDeadEnemies();
-
-    for (let enemy of enemyArray) {
-      console.log(enemy.currentHP);
-    }
+    
 
     if (currentLevel === homeLevel) {
       homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
@@ -695,9 +702,6 @@ function draw() {
       currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
     }
     
-
-    // damageSquare();
-    // healSquare();
 
     you.move();
     you.display();
@@ -713,28 +717,70 @@ function draw() {
 }
 
 function tutorial() {
-  if (currentLevel === tutorialLevel) {
+  
     textSize(15);
     textAlign(CENTER);
 
     if (tutorialPart === 1) {
-      text("Use the WASD keys to move", width/2, 100);
+      fill(120);
     }
-    else if (tutorialPart === 2) {
-      text("exit the grid (down or right) to continue", width/2, 100);
-      if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
-        tutorialPart = 3; 
-      }
+    else {
+      fill(80);
     }
-    else if (tutorialPart === 3){
-      //keep player in grid untill enemy is defeated
-      //you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE);
-      //you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY+CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE);
-      
-      //dist based text far mouse close other ykykyk
-      text("Hover with your mouse to see an enemy's HP", width/2, 100);
+
+    text("press 'x' to skip tutorial", width-150, 30);
+
+    fill(255);
+
+  if (tutorialPart === 1) {
+    text("Use the WASD keys to move", width/2, 100);
+  }
+  else if (tutorialPart === 2) {
+    text("exit the grid (down or right) to continue", width/2, 100);
+    if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
+      tutorialPart = 3; 
     }
   }
+  else if (tutorialPart === 3){
+    //keep player in grid untill enemy is defeated
+    you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE - you.width);
+    you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE - you.height);
+    text("Hover with your mouse to see an enemy's HP", width/2, 100);
+    if (collidePointCircle(mouseX, mouseY, tutorialEnemy.x, tutorialEnemy.y, tutorialEnemy.r*2)) {
+      tutorialPart = 4;
+    }
+  }
+  else if (tutorialPart === 4) {
+    text("Use left click to attack", width/2, 100);
+    if (tutorialEnemy.currentHP <= 0) {
+      tutorialPart = 5;
+    }
+  }
+  else if (tutorialPart === 5) {
+    text("Continue searching the level to find the goal points", width/2, 100);
+    if (tutorialLevel.completedGoals === tutorialLevel.totalGoals) {
+      tutorialPart = 6;
+    }
+  }
+  else if (tutorialPart === 6) {
+    text("Click to return to base", width/2, 100);
+    if (currentLevel === homeLevel) {
+      tutorialPart = 7;
+    }
+  }
+  else if(tutorialPart === 7) {
+    text("rest in bed in order to regain health", width/2, 100);
+    if(you.currentHP === you.maxHP) {
+      tutorialPart = 8;
+    }
+  }
+  else if(tutorialPart === 8) {
+    text("When your ready, exit right to go to a new level", width/2, 100);
+    if (currentLevel !== homeLevel) {
+      tutorialOver = true;
+    }
+  }
+  
 }
 
 
@@ -747,7 +793,7 @@ function displayHomeStuff() {
   if (gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
     image(homeBed, bedX, bedY, bedW, bedH);
 
-    if (collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
+    if (you.currentHP !== you.maxHP && collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
       restButton.display();
     }
   }
@@ -757,6 +803,18 @@ function changeLevel() {
   if (currentLevel.completedGoals === currentLevel.totalGoals && !tutorialLevel){
     // tutorialOver = true;
     returnButton.display();
+  }
+}
+
+function createTemplate(cols, rows) {
+  // let theRows = rows;
+  // let theCols = cols;
+  let theRows = 3;
+  let theCols = 3;
+  let theTemplate = [];
+
+  for(let y = 0; y < theCols; y++){
+
   }
 }
 
@@ -815,11 +873,6 @@ function displayOngoingUI() {
   displayInstructions();
 
   animateSideMenu();
-  if (sideMenu.state === "open") {
-    //display setting/menu buttons
-    toggleSoundButton.display();
-    
-  }
 
   if (currentLevel.completedGoals === currentLevel.totalGoals && currentLevel.totalGoals !== 0){
     returnButton.display();
@@ -827,9 +880,14 @@ function displayOngoingUI() {
 
   //TEMPORARY
   if (currentLevel !== homeLevel) {
-    textSize(12);
-    text(`${gridOfLevel[0]}, ${gridOfLevel[1]}`, 200, 200);
-    text(`${currentLevel.completedGoals}/${currentLevel.totalGoals} goals completed`, 200, 230);
+    if (showDebug) {
+      textSize(12);
+      text(`${gridOfLevel[0]}, ${gridOfLevel[1]}`, 200, 200);
+      text(`${currentLevel.completedGoals}/${currentLevel.totalGoals} goals completed`, 200, 230);
+    }
+  }
+  if(currentLevel === homeLevel) {
+
   }
 }
 
@@ -888,6 +946,11 @@ function displaySideMenu() {
   toggleSoundButton.x = sideMenu.x + sideMenu.width/2 - toggleSoundButton.w/2; 
   toggleSoundButton.display();
 
+  toggleDebugButton.x = sideMenu.x + sideMenu.width/2 - toggleDebugButton.w/2; 
+  toggleDebugButton.display();
+
+  toggleBGMButton.x = sideMenu.x + sideMenu.width/2 - toggleBGMButton.w/2; 
+  toggleBGMButton.display();
   //only adjustable in....
 
   textAlign(CENTER);
@@ -927,15 +990,15 @@ function displayInstructions() {
     fill(255);
     stroke(0);
     textSize(12);
-    text("Press SPACE to close", width/2, instructions.height+40);
+    text("Press SPACE to close", width/2, height/2 +instructions.height/2-20);
 
     textSize(30);
-    text("- - - - INSTRUCTIONS - - - - ", width/2, 100);
+    text("- - - - INSTRUCTIONS - - - - ", width/2, height/2 - instructions.height/2 + 25);
+  
+    textSize(22);
+    text("Movement use WASD keys \n \n Left click to Attack \n \n hover over enemies or get within range to see their health \n \n Objectives: find all goal points on each level to move on, \n defeat enemies to gain points", width/2, height/2 - instructions.height/2 + 215);
     textAlign(LEFT);
     noStroke();
-
-    //control segment
-    //rect(width/2-(width-700)/2, height/2, (width-700)/2, height-100);
   }
   if (instructions.state === "closing") {
     instructions.state = "closed";
@@ -943,7 +1006,7 @@ function displayInstructions() {
 }
 
 
-
+//not currently in use
 function damageSquare() {
   //like a spike or something to be decided
 
@@ -1003,7 +1066,10 @@ function createButtons() {
     80, 20,        27, 5, 43,      "rest?",  15, "notToggle");
     
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
-  //sound volume (amp) adjuster button when
+
+  toggleBGMButton = new Button(sideMenu.width/2, 100, 150, 40,   58, 38, 84,     "background Music:", 15, "on");
+  
+  toggleDebugButton = new Button(sideMenu.width/2, 150, 175, 40,    58, 38, 84, "Show Debug Menu:", 15, "off");
 }
 
 
@@ -1019,8 +1085,18 @@ function mousePressed() {
     }
   }
 
+
+  //side menu buttons
   if (toggleSoundButton.isClicked()) {
     isSoundOn = !isSoundOn;
+  }
+
+  if (toggleDebugButton.isClicked()) {
+    showDebug = !showDebug;
+  }
+
+  if(toggleBGMButton.isClicked()) {
+    isMusicOn = !isMusicOn;
   }
 
 
@@ -1049,6 +1125,8 @@ function mousePressed() {
       currentLevel = homeLevel;
       gridOfLevel[0] = 0;
       gridOfLevel[1] = 0;
+      you.x = width/2 - you.width/2;
+      you.y = width/2 - you.height/2;
     }
     else if (restButton.isClicked()) {
       //blink screen
@@ -1072,6 +1150,10 @@ function mousePressed() {
 function keyPressed() {
   if (tutorialPart === 1 && (keyIsDown(87) || keyIsDown(83) || keyIsDown(68) || keyIsDown(65))) {
     tutorialPart = 2;
+  }
+
+  if (!tutorialOver && key === "x") {
+    tutorialOver = true;
   }
   
   if (keyCode === 32) {
