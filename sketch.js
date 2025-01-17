@@ -55,7 +55,6 @@ let toggleDebugButton;
 let toggleBGMButton;
 
 let sillyButton;
-let isYouSilly = false;
 
 //GRIDS
 const CELL_SIZE = 100;
@@ -164,12 +163,18 @@ class Player {
     this.exitTop = false;
     this.exitBottom = false;
 
+    this.isYouSilly = false;
+
   }
 
   display() {
     noStroke();
     fill(168, 132, 207);
     rect(this.x, this.y, this.width, this.height, 50);
+    if (this.isYouSilly) {
+      fill(0);
+      text(":3", this.x + this.width/2, this.y + this.height/2);
+    }
   }
 
   displayHealthBar() {
@@ -399,11 +404,6 @@ class Player {
         theGridY + theGridH - CELL_SIZE-this.height); //max  
     }
 
-    // let theGridX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX;
-    // let theGridY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY;
-    // let theGridH = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight;
-    // let theGridW = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth;
-
     //updates coords when you move to a different grid
     //right
     if ( keyIsDown(68) && this.x > theGridX + theGridW + this.width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
@@ -446,6 +446,11 @@ class Enemy {
     if (this.currentHP > 0) {
       fill("red");
       circle(this.x, this.y, this.r*2);
+
+      if (you.isYouSilly) {
+        fill(0);
+        text(":3", this.x, this.y);
+      }
       
       if (collidePointCircle(mouseX, mouseY, this.x, this.y, this.r*2) || dist(this.x, this.y, you.x, you.y) < 150) {
         this.displayHealth();
@@ -630,7 +635,6 @@ class SingleGrid {
     this.gridHeight = this.rows*CELL_SIZE;
 
     this.gridX =  width/2 - (this.gridWidth/2-CELL_SIZE/2) - CELL_SIZE/2;
-
     this.gridY =  height/2 - (this.gridHeight/2-CELL_SIZE/2) - CELL_SIZE/2;
 
     this.canEnter = true;
@@ -1056,6 +1060,9 @@ function displaySideMenu() {
   toggleBGMButton.display();
   //only adjustable in....
 
+  sillyButton.x = sideMenu.x + sideMenu.width/2 - sillyButton.w/2;
+  sillyButton.display();
+
   textAlign(CENTER);
   fill(255);
   stroke(0);
@@ -1172,9 +1179,11 @@ function createButtons() {
   
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
 
-  toggleBGMButton = new Button(sideMenu.width/2, 100, 150, 40,   58, 38, 84,     "background Music:", 15, "on");
+  toggleBGMButton = new Button(sideMenu.width/2, 100, 170, 40,     58, 38, 84,     "background Music:", 15, "on");
   
-  toggleDebugButton = new Button(sideMenu.width/2, 150, 175, 40,    58, 38, 84, "Show Debug Menu:", 15, "off");
+  toggleDebugButton = new Button(sideMenu.width/2, 150, 175, 40,   58, 38, 84,     "Show Debug Menu:", 15, "off");
+
+  sillyButton = new Button(sideMenu.width/2, 200, 100, 40,          58, 38, 84,     ":3 :3 :3 :", 15, "off");
 }
 
 
@@ -1203,6 +1212,10 @@ function mousePressed() {
 
   if(toggleBGMButton.isClicked()) {
     isMusicOn = !isMusicOn;
+  }
+
+  if (sillyButton.isClicked()) {
+    you.isYouSilly = !you.isYouSilly;
   }
 
 
