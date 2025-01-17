@@ -1,6 +1,6 @@
 // Major Project
 // Avery Walker
-// January 15th 2025
+// January 17th 2025
 //
 //
 //(currentLevel['aLevel'])[0][0].rows <- figured out how to access stuff from my 3d array. cool
@@ -9,17 +9,25 @@
 
 //TO DO LIST//
 
-// background music
+// add background music [] NEEDS TO HAVE
 
-//attacks
+// finish projectile attacks [] NEEDS TO HAVE
+
+// finish createTemplate [] NEEDS TO HAVE
+
+//game over screen []
+
+//(from beta testing)
+// when moving between grids it should use the positions from the grid its moving into []
+
+//fix weirdness with the tutorial barriers ???? []
 
 
 
-//gameStates
+//Game State
 let gameState = "start";
-let levelArea = "onLevel";
 
-//player
+//PLAYER
 let you;
 
 //player stats
@@ -28,7 +36,7 @@ let enemysDefeated = 0;
 let points = 0;
 let BonusPointsRecieved = false;
 
-//enemies
+//ENEMIES
 let amountOfEnemies = 1;
 let enemyArray = [];
 let tutorialEnemy;
@@ -62,17 +70,17 @@ let tutorialOver = false;
 let tutorialPart = 1;
 let tutorialLevel;
 let homeLevel;
+let someLevel;
 
-//sound/music
+//SOUND/MUSIC
 let isSoundOn = true;
 
-let buttonClickedSound; //set
-let swordSlash; //not set
-let gunBlast; //not set
+let buttonClickedSound; 
 
 let isMusicOn = true;
 
 let BackgroundMusic; //not set
+
 
 
 //MENUS
@@ -106,9 +114,8 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   you = new Player(width/2, height/2);
-  
 
-  // LEVELS
+  
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
   homeLevel =  new Level([[3, 1]]);
 
@@ -117,10 +124,12 @@ function setup() {
   homeLevel.level = homeLevel.generateLevel();
 
   currentLevel = tutorialLevel;
+
+  
   tutorialEnemy = new Enemy();
   enemyArray.push(tutorialEnemy);
 
-  // BUTTONS
+  
   createButtons();
 }
 
@@ -128,15 +137,12 @@ function setup() {
 
 class Player {
   constructor(x, y) {
-    //sprite should be about (40x15)2
-    //this.height = 80;
     this.height = 30;
     this.width = 30;
 
     this.x = x-this.width/2;
     this.y = y-this.height/2;
 
-    //used to pause player input during dialouge ect.
     this.canMove = true;
     this.speed = 10;
 
@@ -246,10 +252,7 @@ class Player {
 
       }
     }
-
-    if (levelArea === "onLevel") {
-      this.moveBetweenGrids(); 
-    }
+    this.moveBetweenGrids(); 
   }
 
   checkExits() {
@@ -401,7 +404,7 @@ class Player {
     // let theGridH = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight;
     // let theGridW = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth;
 
-    //updates coords when you move
+    //updates coords when you move to a different grid
     //right
     if ( keyIsDown(68) && this.x > theGridX + theGridW + this.width && currentLevel.level[gridOfLevel[0]][gridOfLevel[1]+1].canEnter) {
       gridOfLevel[1] += 1;
@@ -438,6 +441,8 @@ class Enemy {
   }
 
   display() {
+    removeDeadEnemies();
+
     if (this.currentHP > 0) {
       fill("red");
       circle(this.x, this.y, this.r*2);
@@ -464,26 +469,81 @@ class Enemy {
       you.lastHit = millis();
 
     }
-
-    // if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
-    //   you.currentHP -= 10;
-    //   you.currentHP = constrain(you.currentHP, 0, you.maxHP);
-    //   you.lastHit = millis();
-    //   //console.log(millis() > you.lastHit + you.hitWait);
-    // }
   }
 }
 
 class Bullet {
   constructor(){
-    this.x;
-    this.y;
-    this.direction; //playerx&y/mouseX&Y from when clicked? as an angle erm math
   }
   //particle
+
+  //you.theBullets = [];
+  // class Particle {
+  //   constructor(x1, y1, x2, y2) {
+  //     this.x1 = x1;
+  //     this.y1 = y1;
+  //     this.x2 = x2;
+  //     this.y2 = y2;
+      
+  //     this.dx = this.x2-this.x1;
+  //     this.dy = this.y2-this.y1;
+      
+  //     this.dx = map(this.dx, (this.x2-this.x1)*-1, this.x2-this.x1, -1, 1);
+  //     this.dy = map(this.dy, (this.y2-this.y1)*-1, this.y2-this.y1, -1, 1);
+      
+  //     this.size = 5;
+  //     this.r = random(100, 255);
+  //     this.g = random(0, 50);
+  //     this.b = random(100, 255);
+  //     this.a = 255;
+  //   }
+  
+  //   display() {
+  //     noStroke();
+  //     fill(this.r, this.g, this.b, this.a);
+  //     circle(this.x1, this.y1, this.size);
+  //   }
+  
+  //   update() {
+  //     //move
+  //     this.x1 += this.dx;
+  //     this.y1 += this.dy;
+  //     //fade away over time
+  //     this.a--;
+  
+  //   }
+  
+  //   isDead() {
+  //     return this.a < 0;
+  //   }
+  
+  // }
+  
+  
+  // function draw() {
+  //   background(10);
+  //   for (let bullet of theBullets) {
+  //     if (bullet.isDead()) {
+  //       //remove it
+  //       let index = theBullets.indexOf(Bullet);
+  //       theBullets.splice(index, 1);
+  //     }
+  
+  //     else {
+  //       bullet.update();
+  //       bullet.display();
+  //     }
+  //   }
+  // }
+  
+  
+  // function mousePressed() {
+    
+  //   let someParticle = new Particle(width/2, height/2, mouseX, mouseY);
+  //   theBullets.push(someParticle);
+    
+  // }
 }
-
-
 
 class Button {
   constructor(x, y, w, h, r, g, b, theText, tSize, toggle) {
@@ -658,7 +718,6 @@ class SingleGrid {
 
 class Level  {
   constructor(template) {
-    //temporary
     this.template = template;
 
     this.completedGoals = 0;
@@ -674,11 +733,12 @@ class Level  {
     for (let y = 0; y < this.template.length; y ++) {
       this.aLevel.push([]);
       for (let x = 0; x < this.template[y].length; x++) {
-        //console.log(this.template[y][x]);
+
         if (this.template[y][x] === "g") {
           this.totalGoals +=1;
           let aGrid = new SingleGrid(5, 5);
           this.aLevel[y].push(aGrid);
+
         }
         else {  
           let aGrid = new SingleGrid(this.template[y][x]+4, this.template[y][x]+4);
@@ -701,33 +761,80 @@ function draw() {
     
   }
   else if (gameState === "ongoing") {
-    changeLevel();
+    changeCurretLevel();
     background(0);
-    removeDeadEnemies();
-    
 
-    if (currentLevel === homeLevel) {
-      homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
-      displayHomeStuff();
-    }
-    else if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
-      tutorialLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
-      tutorialEnemy.display();
-    }
-    else {
-      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
-    }
+    displayCurrentLevel();
     
-
     you.move();
     you.display();
 
     displayOngoingUI();
 
-    
-
     if (!tutorialOver){
       tutorial();
+    }
+  }
+}
+
+
+
+function changeCurretLevel() {
+  if(currentLevel === homeLevel && gridOfLevel[0] === 0 && gridOfLevel[1] === 1) {
+    tutorialOver = true;
+    someLevel = new Level([[3,round(random(2, 5)),"g"],["g",3,round(random(2,5))]]);
+    someLevel.level = someLevel.generateLevel();
+    currentLevel = someLevel;
+    gridOfLevel[0] = 0;
+    gridOfLevel[1] = 0;
+  }
+  
+  if (currentLevel.completedGoals === currentLevel.totalGoals && !tutorialLevel){
+    // tutorialOver = true;
+    returnButton.display();
+  }
+}
+
+function displayCurrentLevel() {
+  if (currentLevel === homeLevel) {
+    homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
+    displayHomeStuff();
+  }
+  else if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
+    tutorialLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
+    tutorialEnemy.display();
+  }
+  else {
+    currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
+  }
+}
+
+//wip
+function createTemplate(cols, rows) {
+  // let theRows = rows;
+  // let theCols = cols;
+  let theRows = 3;
+  let theCols = 3;
+  let theTemplate = [];
+
+  for(let y = 0; y < theCols; y++){
+
+  }
+}
+
+
+
+function displayHomeStuff() {
+  let bedX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2;
+  let bedY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE;
+  let bedW = 86;
+  let bedH = 163;
+
+  if (gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
+    image(homeBed, bedX, bedY, bedW, bedH);
+
+    if (you.currentHP !== you.maxHP && collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
+      restButton.display();
     }
   }
 }
@@ -784,7 +891,7 @@ function tutorial() {
     }
   }
   else if (tutorialPart === 6) {
-    text("Click to return to base", width/2, 100);
+    text("Click button to return to base", width/2, 100);
 
     if (currentLevel === homeLevel) {
       tutorialPart = 7;
@@ -812,40 +919,6 @@ function tutorial() {
   
 }
 
-
-function displayHomeStuff() {
-  let bedX = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2;
-  let bedY = currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE;
-  let bedW = 86;
-  let bedH = 163;
-
-  if (gridOfLevel[0] === 0 && gridOfLevel[1] === 0) {
-    image(homeBed, bedX, bedY, bedW, bedH);
-
-    if (you.currentHP !== you.maxHP && collideRectRect(bedX, bedY, bedW, bedH,    you.x, you.y, you.width, you.height)) {
-      restButton.display();
-    }
-  }
-}
-
-function changeLevel() {
-  if (currentLevel.completedGoals === currentLevel.totalGoals && !tutorialLevel){
-    // tutorialOver = true;
-    returnButton.display();
-  }
-}
-
-function createTemplate(cols, rows) {
-  // let theRows = rows;
-  // let theCols = cols;
-  let theRows = 3;
-  let theCols = 3;
-  let theTemplate = [];
-
-  for(let y = 0; y < theCols; y++){
-
-  }
-}
 
 
 function displayStartScreen() {
@@ -886,8 +959,6 @@ function displayStartScreen() {
   animateSideMenu();
 }
 
-
-
 function displayOngoingUI() {
   //while gameState === "ongoing";
   //change the x & y for menu button
@@ -924,8 +995,6 @@ function displayOngoingUI() {
 
   }
 }
-
-
 
 function animateSideMenu() {
   
@@ -995,13 +1064,7 @@ function displaySideMenu() {
   noStroke();
 }
 
-function removeDeadEnemies() {
-  for (let enemy of enemyArray) {
-    if (enemy.currentHP <= 0) {
-      enemyArray.splice(enemyArray.indexOf(enemy), 1);
-    }
-  }
-}
+
 
 function displayInstructions() {
   if (instructions.state === "opening") {
@@ -1040,22 +1103,6 @@ function displayInstructions() {
 }
 
 
-//not currently in use
-function damageSquare() {
-  //like a spike or something to be decided
-
-  fill("red");
-  noStroke();
-  rect(width/2+50, height/2+50, 30, 30);
-  
-  console.log();
-  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
-    you.currentHP -= 10;
-    you.currentHP = constrain(you.currentHP, 0, you.maxHP);
-    you.lastHit = millis();
-    //console.log(millis() > you.lastHit + you.hitWait);
-  }
-}
 
 function spawnEnemy(amountOfEnemies){
   for (let i = amountOfEnemies; i > 0; i++) {
@@ -1064,28 +1111,51 @@ function spawnEnemy(amountOfEnemies){
   }
 }
 
-function healSquare() {
-  //heals
-  let i = 0;
-
-  fill("green");
-  noStroke();
-  rect(width/2-50, height/2-50, 30, 30);
-
-  if (collideRectRect(you.x, you.y, you.width, you.height,    width/2-50, height/2-50, 30, 30)){
-    you.currentHP += 10;
-    you.currentHP = constrain(you.currentHP, 0, you.maxHP);
-    
+function removeDeadEnemies() {
+  for (let enemy of enemyArray) {
+    if (enemy.currentHP <= 0) {
+      enemyArray.splice(enemyArray.indexOf(enemy), 1);
+    }
   }
 }
+
+//not currently in use
+// function damageSquare() {
+//   //like a spike or something to be decided
+
+//   fill("red");
+//   noStroke();
+//   rect(width/2+50, height/2+50, 30, 30);
+  
+//   console.log();
+//   if (collideRectRect(you.x, you.y, you.width, you.height,    width/2+50, height/2+50, 30, 30)   &&   (millis() > you.lastHit + you.hitWait || you.lastHit <= 0)){
+//     you.currentHP -= 10;
+//     you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+//     you.lastHit = millis();
+//     //console.log(millis() > you.lastHit + you.hitWait);
+//   }
+// }
+
+// function healSquare() {
+//   //heals
+//   let i = 0;
+
+//   fill("green");
+//   noStroke();
+//   rect(width/2-50, height/2-50, 30, 30);
+
+//   if (collideRectRect(you.x, you.y, you.width, you.height,    width/2-50, height/2-50, 30, 30)){
+//     you.currentHP += 10;
+//     you.currentHP = constrain(you.currentHP, 0, you.maxHP);
+    
+//   }
+// }
 
 
 
 function createButtons() {
 //  button format:              x // y // width // height //   r // g // b //    "text"    //  textsize // "toggle"
 
-
-  //purple
   menuButton = new Button(width/2 + 80, height-75, 25, 25,        27, 5, 43,   "☰", 14, "notToggle");
 
   instructionButton = new Button(width/2, height-75, 100, 25,     27, 5, 43,   "Instructions", 15, "notToggle");
@@ -1093,13 +1163,13 @@ function createButtons() {
   startButton = new Button(width/2, height-150, 150, 50,          27, 5, 43,   "Start" , 35, "notToggle");
 
 
+
   returnButton = new Button(width/2, height-175, 200, 50,          27, 5, 43,   `Level Complete \n {{ return to base }}` , 15, "notToggle");
   //when level is completed pressing this button brings you to homeLevel
 
-  restButton = new Button(homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2 + 43, homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE + 180,
-    80, 20,        27, 5, 43,      "rest?",  15, "notToggle");
+  restButton = new Button(homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE*2 + 43, homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE + 180, 80, 20,        27, 5, 43,      "rest?",  15, "notToggle");
   
-    
+  
   toggleSoundButton = new Button(sideMenu.width/2, 50, 100, 40,    58, 38, 84,    "Sounds:", 15, "on");
 
   toggleBGMButton = new Button(sideMenu.width/2, 100, 150, 40,   58, 38, 84,     "background Music:", 15, "on");
@@ -1138,14 +1208,13 @@ function mousePressed() {
 
   if (gameState === "start") {
     if (instructions.state !== "open" && instructions.state !== "opening" ) {
-      //start game
+
       if (startButton.isClicked()) {
         gameState = "ongoing";
         currentLevel = tutorialLevel;
       }
       
       if (instructionButton.isClicked()) {
-        //displayInstructions();
         if (instructions.state === "closed") {
           instructions.state = "opening";
         }
@@ -1164,13 +1233,12 @@ function mousePressed() {
       you.x = width/2 - you.width/2;
       you.y = width/2 - you.height/2;
     }
+
     else if (restButton.isClicked()) {
-      //blink screen
       you.currentHP = you.maxHP;
     }
+
     else {
-      //if (mouseX < you.x-100 && mouseX > you.x + 100)
-      //you.attack();
       for (let enemy of enemyArray) {
         if (collidePointCircle(mouseX, mouseY, enemy.x, enemy.y, enemy.r*2)) {
           enemy.currentHP -= you.DMG;
@@ -1178,11 +1246,9 @@ function mousePressed() {
       }
     }
   }
+
 }
   
-
-
-
 function keyPressed() {
 
   //tutorial
