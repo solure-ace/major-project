@@ -1,5 +1,5 @@
 // Major Project
-// Avery Walker
+// 
 // January 17th 2025
 //
 //
@@ -40,6 +40,8 @@ let BonusPointsRecieved = false;
 let amountOfEnemies = 1;
 let enemyArray = [];
 let tutorialEnemy;
+
+let theBullets = [];
 
 //BUTTONS
 let instructionButton;
@@ -118,7 +120,7 @@ function setup() {
   tutorialLevel = new Level([[2, 3, 2],[4, "g"]]);
   homeLevel =  new Level([[3, 1]]);
 
-  //changing this to 'aLevel' breaks it idk why eslint wants me to do that
+  //changing this to 'aLevel' breaks it eslint is lying
   tutorialLevel.level = tutorialLevel.generateLevel();
   homeLevel.level = homeLevel.generateLevel();
 
@@ -150,9 +152,6 @@ class Player {
 
     this.lastHit = 0;
     this.hitWait = 1000;
-
-    this.lastAttacked = 0;
-    this.attackWait =  1500;
 
     this.state = "alive";
 
@@ -302,36 +301,6 @@ class Player {
     }
   }
 
-  checkState() {
-    if (this.currentHP <= 0) {
-      this.state = "dead";
-      returnButton.display();
-    }
-  }
-
-  attack() {
-    if (dist(mouseX, mouseY, this.x, this.y) < 150){ //&& (millis() > this.lastAttacked + this.attackWait || this.lastAttacked <= 0)) {
-      this.meleeAttack();
-    }
-    else {
-      this.rangedAttack();
-    }
-    // else if (millis() < this.lastAttacked + this.attackWait) {
-    //   this.meleeAttackAnim = "end";
-    // }
-  }
-
-  meleeAttack() {
-    fill(255, 255, 255, 50);
-    circle(mouseX, mouseY, 100);
-
-    //for enemy of enemyArray if collide enemy take damage 
-  }
-
-  rangedAttack() {
-
-  }
-
   moveBetweenGrids() {
 
     this.checkExits();
@@ -434,7 +403,7 @@ class Enemy {
     this.y = random(currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight - CELL_SIZE);
     this.r = 30;
 
-    this.currentHP = 50;
+    this.currentHP = 100;
     this.maxHP = 100;
 
     this.DMG = 10;
@@ -478,76 +447,60 @@ class Enemy {
 }
 
 class Bullet {
-  constructor(){
-  }
-  //particle
-
-  //you.theBullets = [];
-  // class Particle {
-  //   constructor(x1, y1, x2, y2) {
-  //     this.x1 = x1;
-  //     this.y1 = y1;
-  //     this.x2 = x2;
-  //     this.y2 = y2;
+  constructor(x1, y1, x2, y2) {
+      this.x1 = x1;
+      this.y1 = y1;
+      this.x2 = x2;
+      this.y2 = y2;
       
-  //     this.dx = this.x2-this.x1;
-  //     this.dy = this.y2-this.y1;
+      this.speed = 5;
       
-  //     this.dx = map(this.dx, (this.x2-this.x1)*-1, this.x2-this.x1, -1, 1);
-  //     this.dy = map(this.dy, (this.y2-this.y1)*-1, this.y2-this.y1, -1, 1);
+      this.dx;
+      this.dy;
       
-  //     this.size = 5;
-  //     this.r = random(100, 255);
-  //     this.g = random(0, 50);
-  //     this.b = random(100, 255);
-  //     this.a = 255;
-  //   }
+      this.setDirection();
   
-  //   display() {
-  //     noStroke();
-  //     fill(this.r, this.g, this.b, this.a);
-  //     circle(this.x1, this.y1, this.size);
-  //   }
+      this.size = 10;
+      this.a = 255;
+    }
   
-  //   update() {
-  //     //move
-  //     this.x1 += this.dx;
-  //     this.y1 += this.dy;
-  //     //fade away over time
-  //     this.a--;
+    display() {
+      noStroke();
+      fill(255);
+      circle(this.x1, this.y1, this.size);
+    }
   
-  //   }
+    update() {
+      //move
+      this.x1 += this.speed*this.dx;
+      this.y1 += this.speed*this.dy;
+      //fade away over time
+      this.a--;
   
-  //   isDead() {
-  //     return this.a < 0;
-  //   }
+    }
   
-  // }
-  
-  
-  // function draw() {
-  //   background(10);
-  //   for (let bullet of theBullets) {
-  //     if (bullet.isDead()) {
-  //       //remove it
-  //       let index = theBullets.indexOf(Bullet);
-  //       theBullets.splice(index, 1);
-  //     }
-  
-  //     else {
-  //       bullet.update();
-  //       bullet.display();
-  //     }
-  //   }
-  // }
-  
-  
-  // function mousePressed() {
+    isDead() {
+      return this.a < 0;
+    }
     
-  //   let someParticle = new Particle(width/2, height/2, mouseX, mouseY);
-  //   theBullets.push(someParticle);
-    
-  // }
+    setDirection() {
+      if (this.x2 > this.x1 ) {
+        this.dx = 1;
+      }
+  
+      else if (this.x2 < this.x1 ) {
+        this.dx = -1;
+      }
+  
+      
+      if (this.y2 > this.y1 ) {
+        this.dy = 1;
+      }
+  
+      else if (this.y2 < this.y1 ) {
+        this.dy = -1;
+      } 
+    }
 }
 
 class Button {
@@ -641,7 +594,7 @@ class SingleGrid {
     this.goalCompleted = false;
     this.goalCounted = false;
 
-    this.amountOfEnemies = random(0, this.rows-1);
+    this.amountOfEnemies = round(random(0, this.rows-1));
     
     this.generateGrid();
   }
@@ -765,6 +718,7 @@ function draw() {
     
   }
   else if (gameState === "ongoing") {
+    checkPlayerState();
     changeCurretLevel();
     background(0);
 
@@ -782,6 +736,14 @@ function draw() {
 }
 
 
+function checkPlayerState() {
+  if (you.currentHP <= 0) {
+    currentLevel = homeLevel;
+    gridOfLevel[0] = 0;
+    gridOfLevel[1] = 0;
+  }
+}
+
 
 function changeCurretLevel() {
   if(currentLevel === homeLevel && gridOfLevel[0] === 0 && gridOfLevel[1] === 1) {
@@ -791,29 +753,51 @@ function changeCurretLevel() {
     currentLevel = someLevel;
     gridOfLevel[0] = 0;
     gridOfLevel[1] = 0;
+    
+    enemyArray = [];
   }
   
   if (currentLevel.completedGoals === currentLevel.totalGoals && !tutorialLevel){
     // tutorialOver = true;
     returnButton.display();
   }
+
 }
 
 function displayCurrentLevel() {
+  //home
   if (currentLevel === homeLevel) {
     homeLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(greyTile);
     displayHomeStuff();
   }
-  else if (currentLevel === tutorialLevel && (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0)) {    
+
+  //tutorial
+  else if (currentLevel === tutorialLevel) {    
     tutorialLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
-    tutorialEnemy.display();
+    if (gridOfLevel[0] === 0 && gridOfLevel[1] === 1 || gridOfLevel[0] === 1 && gridOfLevel[1] === 0) {
+      tutorialEnemy.display();
+    }
   }
+
+  //generated levels
   else {
+    while (currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].amountOfEnemies > 0) {
+      let someEnemy = new Enemy();
+      enemyArray.push(someEnemy);
+      currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].amountOfEnemies -= 1;
+    }
+
     currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].displayGrid(cyanTurf);
+
+    for (let enemy of enemyArray) {
+    if (currentLevel.template[gridOfLevel[0]][gridOfLevel[1]] !== "g") {
+      enemy.display();
+      }
+    }
   }
 }
 
-//wip
+
 function createTemplate(cols, rows) {
   // let theRows = rows;
   // let theCols = cols;
@@ -882,6 +866,8 @@ function tutorial() {
     }
   }
   else if (tutorialPart === 4) {
+    you.x = constrain(you.x, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridX + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridWidth - CELL_SIZE - you.width);
+    you.y = constrain(you.y, currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + CELL_SIZE,  currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridY + currentLevel.level[gridOfLevel[0]][gridOfLevel[1]].gridHeight -  CELL_SIZE - you.height);
     text("Use left click to attack and defeat the enemy to move on", width/2, 100);
     if (tutorialEnemy.currentHP <= 0) {
       tutorialPart = 5;
@@ -1111,17 +1097,14 @@ function displayInstructions() {
 
 
 
-function spawnEnemy(amountOfEnemies){
-  for (let i = amountOfEnemies; i > 0; i++) {
-    let someEnemy = new Enemy();
-    enemyArray.push(someEnemy);
-  }
+function spawnEnemies(){
 }
 
 function removeDeadEnemies() {
   for (let enemy of enemyArray) {
     if (enemy.currentHP <= 0) {
       enemyArray.splice(enemyArray.indexOf(enemy), 1);
+      points += 100;
     }
   }
 }
@@ -1252,8 +1235,13 @@ function mousePressed() {
     }
 
     else {
+
+      let someParticle = new Bullet(width/2, height/2, mouseX, mouseY);
+      theBullets.push(someParticle);
+
       for (let enemy of enemyArray) {
-        if (collidePointCircle(mouseX, mouseY, enemy.x, enemy.y, enemy.r*2)) {
+        // melee
+        if (collidePointCircle(mouseX, mouseY, enemy.x, enemy.y, enemy.r*2) &&  dist(you.x, you.y, enemy.x, enemy.y) < 200 === true) {
           enemy.currentHP -= you.DMG;
         }
       }
